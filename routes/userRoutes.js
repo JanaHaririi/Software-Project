@@ -37,3 +37,10 @@ router.get(
   );
   
 module.exports = router;
+
+
+
+const { requestPasswordReset, resetPasswordWithOtp } = require('../controllers/userController');
+
+// Public routes for password reset
+router.put('/forgetPassword/request', requestPasswordReset);
