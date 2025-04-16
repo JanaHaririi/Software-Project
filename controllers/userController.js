@@ -190,6 +190,76 @@ const loginUser = async (req, res) => {
   
   
   
+  const crypto = require('crypto');
+  const nodemailer = require('nodemailer');
+  const User = require('../models/User');
+  
+  const otpStore = new Map();
   
   
+  const sendOtpEmail = async (email, otp) => {
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', // or any other email provider
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
   
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your OTP for Password Reset',
+      text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
+    };
+  
+    await transporter.sendMail(mailOptions);
+  };
+  
+  
+  const requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      otpStore.set(email, { otp, expires: Date.now() + 10 * 60 * 1000 }); // 10 minutes expiry
+  
+      await sendOtpEmail(email, otp);
+      res.json({ message: 'OTP sent to email' });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to send OTP', error: err.message });
+    }
+  };
+  
+  const resetPasswordWithOtp = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    try {
+      const record = otpStore.get(email);
+      if (!record) return res.status(400).json({ message: 'OTP not found or expired' });
+  
+      if (record.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+  
+      if (Date.now() > record.expires) {
+        otpStore.delete(email);
+        return res.status(400).json({ message: 'OTP expired' });
+      }
+  
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      const bcrypt = require('bcryptjs');
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+  
+      otpStore.delete(email);
+      res.json({ message: 'Password reset successful' });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to reset password', error: err.message });
+    }
+  };
+  
+  module.exports.requestPasswordReset = requestPasswordReset;
+  module.exports.resetPasswordWithOtp = resetPasswordWithOtp;
