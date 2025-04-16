@@ -47,6 +47,11 @@ const eventSchema = new mongoose.Schema({
     ref: "User", // Reference to the User who created the event
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["approved", "pending", "declined"],
+    default: "pending",
+  },
   createdAt: {
     type: Date,
     default: Date.now,
