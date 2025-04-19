@@ -34,19 +34,16 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
   
     try {
-      // 1. Check if user exists
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
   
-      // 2. Compare password
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
   
-      // 3. Generate token
       const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: '7d'
       });
@@ -55,7 +52,6 @@ const loginUser = async (req, res) => {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 7 * 24 * 60 * 60 * 1000
       });
-      // 4. Respond
       res.json({
         id: user._id,
         name: user.name,
@@ -69,7 +65,7 @@ const loginUser = async (req, res) => {
   };
   const getUserProfile = async (req, res) => {
     try {
-      const user = await User.findById(req.user.id).select('-password'); // hide password
+      const user = await User.findById(req.user.id).select('-password'); 
   
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -93,12 +89,20 @@ const loginUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Update fields if provided
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
+      // Check for duplicate email if it's being changed
+      if (req.body.email && req.body.email !== user.email) {
+        const emailExists = await User.findOne({ email: req.body.email });
+        if (emailExists) {
+          return res.status(400).json({ message: 'Email already in use' });
+        }
+        user.email = req.body.email;
+      }
+  
+      if (req.body.name) {
+        user.name = req.body.name;
+      }
   
       if (req.body.password) {
-        const bcrypt = require('bcryptjs');
         user.password = await bcrypt.hash(req.body.password, 10);
       }
   
@@ -114,6 +118,7 @@ const loginUser = async (req, res) => {
       res.status(500).json({ message: 'Error updating profile', error: err.message });
     }
   };
+  
   const getAllUsers = async (req, res) => {
     try {
       const users = await User.find().select('-password'); // hide passwords
@@ -143,7 +148,6 @@ const loginUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Update fields if provided
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.role = req.body.role || user.role;

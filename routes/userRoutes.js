@@ -9,28 +9,28 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 
 // Protected route
-router.get('/profile', authMiddleware, getUserProfile);
-router.put('/profile', authMiddleware, updateUserProfile);
+router.get('/users/profile', authMiddleware, getUserProfile);
+router.put('/users/profile', authMiddleware, updateUserProfile);
 router.get(
-    '/',
+    '/users',
     authMiddleware,
     authorizeRoles('admin'),
     getAllUsers
   );
   router.get(
-    '/:id',
+    '/users/:id',
     authMiddleware,
     authorizeRoles('admin'),
     getUserById
   );
   router.put(
-    '/:id',
+    '/users/:id',
     authMiddleware,
     authorizeRoles('admin'),
     updateUserById
   );
   router.delete(
-    '/:id',
+    '/users/:id',
     authMiddleware,
     authorizeRoles('admin'),
     deleteUserById
