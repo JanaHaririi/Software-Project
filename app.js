@@ -8,19 +8,15 @@ const app = express();
 
 console.log("🔄 Server is starting...");
 
-// Built-in middlewares
 app.use(express.json());
 app.use(cookieParser());
 
-// Health check route
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Mount user routes
-app.use('/api/v1/users', userRoutes);
+app.use('/api/v1', userRoutes);
 
-// MongoDB Connection
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI, {
