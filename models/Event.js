@@ -1,56 +1,58 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose"); // Import Mongoose library for MongoDB interactions
 
+// Define the schema for the Event model
 const eventSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true,
+  title: { // Define the title field for event title
+    type: String, // Use String type for title
+    required: true, // Title is required
+    trim: true, // Trim any excess whitespace
   },
-  description: {
-    type: String,
-    required: true,
+  description: { // Define the description field for event description
+    type: String, // Use String type for description
+    required: true, // Description is required
   },
-  date: {
-    type: Date,
-    required: true,
+  date: { // Define the date field for event date
+    type: Date, // Use Date type for date
+    required: true, // Date is required
   },
-  location: {
-    type: String,
-    required: true,
+  location: { // Define the location field for event location
+    type: String, // Use String type for location
+    required: true, // Location is required
   },
-  category: {
-    type: String,
-    enum: ["Concert", "Sports", "Theater", "Conference", "Festival", "Other"],
-    required: true,
+  category: { // Define the category field for event category
+    type: String, // Use String type for category
+    enum: ["Concert", "Sports", "Theater", "Conference", "Festival", "Other"], // Restrict category to specified enum values
+    required: true, // Category is required
   },
-  image: {
-    type: String, // URL of the event image
-    default: "",
+  image: { // Define the image field for event image URL
+    type: String, // Use String type for image URL
+    default: "", // Default to an empty string if not provided
   },
-  ticketPrice: {
-    type: Number,
-    required: true,
-    min: 0,
+  ticketPrice: { // Define the ticketPrice field for event ticket price
+    type: Number, // Use Number type for ticket price
+    required: true, // Ticket price is required
+    min: 0, // Ticket price must be greater than or equal to 0
   },
-  totalTickets: {
-    type: Number,
-    required: true,
-    min: 1,
+  totalTickets: { // Define the totalTickets field for total number of tickets
+    type: Number, // Use Number type for total tickets
+    required: true, // Total tickets is required
+    min: 1, // At least 1 ticket must be available
   },
-  remainingTickets: {
-    type: Number,
-    required: true,
-    min: 0,
+  remainingTickets: { // Define the remainingTickets field for remaining tickets
+    type: Number, // Use Number type for remaining tickets
+    required: true, // Remaining tickets is required
+    min: 0, // Remaining tickets must be greater than or equal to 0
   },
-  organizer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Reference to the User who created the event
-    required: true,
+  organizer: { // Define the organizer field for the event organizer
+    type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for referencing documents
+    ref: "User", // Reference the User model
+    required: true, // Organizer is required
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: { // Define the createdAt field for event creation date
+    type: Date, // Use Date type for creation date
+    default: Date.now, // Default to the current date and time
+ },
 });
 
+// Create a Mongoose model based on the eventSchema and export it
 module.exports = mongoose.model("Event", eventSchema);
