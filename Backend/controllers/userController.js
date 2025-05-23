@@ -1,253 +1,265 @@
-const User = require('../models/User'); // Import the User model for database interactions
-const jwt = require('jsonwebtoken'); // Import jwt for generating JSON Web Tokens
-const bcrypt = require('bcryptjs'); // Import bcrypt for hashing passwords
-const crypto = require('crypto'); // Import crypto for generating random bytes
-const sendEmail = require('../utils/email'); // Import the email utility for sending emails
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-// Function to generate a reset token
-const getResetToken = () => crypto.randomBytes(20).toString('hex'); // Generates a random hex string
 
-// Function to register a new user
 const registerUser = async (req, res) => {
-  const { name, email, password } = req.body; // Destructure the request body for user details
+  const { name, email, password, role } = req.body;
 
   try {
-    // Check if user exists in the database
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' }); // Return error if user exists
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create user in the database
-    const user = await User.create({
-      name,
-      email,
-      password: await bcrypt.hash(password, 10), // Hash the password before saving
-      role: 'user' // Default to 'user' if no role provided
-    });
+    const user = await User.create({ name, email, password, role });
 
-    // Generate token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Sign token with user id and role
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '7d'
+    });
 
     res.status(201).json({
       id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token // Send token in the response
+      token
     });
   } catch (err) {
-    res.status(500).json({ message: 'Registration failed', error: err.message }); // Handle errors during registration
+    res.status(500).json({ message: 'Error creating user', error: err.message });
   }
 };
 
-// Function to authenticate user
 const loginUser = async (req, res) => {
-  const { email, password } = req.body; // Destructure the request body for login credentials
-
-  try {
-    // Check for user in the database
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // Return error if user not found
-    }
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // Return error if password does not match
-    }
-
-    // Generate token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Sign token with user id and role
-
-    res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token // Send token in the response
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Login failed', error: err.message }); // Handle errors during login
-  }
-};
-
-// Function to handle forgot password request
-const forgotPassword = async (req, res) => {
-  const { email } = req.body; // Destructure the request body for email
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
-    }
-
-    // Generate reset token and expiry
-    const resetToken = getResetToken(); // Generate reset token
-    const resetTokenExpiry = Date.now() + 3600000; // Set expiry to 1 hour
-
-    user.resetPasswordToken = resetToken; // Assign reset token to user document
-    user.resetPasswordExpires = resetTokenExpiry; // Assign expiry time
-    await user.save(); // Save the user document
-
-    // Create reset URL
-    const resetUrl = `${req.protocol}://${req.get('host')}/api/users/reset-password/${resetToken}`; // Create reset URL
-
-    // Send email
-    const message = `You requested a password reset. Click this link: \n\n ${resetUrl}`; // Prepare email message
-    
+    const { email, password } = req.body;
+  
     try {
-      await sendEmail({ // Send email using the utility
-        email: user.email,
-        subject: 'Password Reset Token',
-        message
+      // 1. Check if user exists
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+  
+      // 2. Compare password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+  
+      // 3. Generate token
+      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: '7d'
       });
-
-      res.status(200).json({ 
-        success: true, 
-        message: 'Password reset link sent to email' 
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+      // 4. Respond
+      res.json({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token
       });
     } catch (err) {
-      // Reset token if email fails
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
+      res.status(500).json({ message: 'Login failed', error: err.message });
+    }
+  };
+  const getUserProfile = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).select('-password'); // hide password
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.json({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      });
+    } catch (err) {
+      res.status(500).json({ message: 'Error getting profile', error: err.message });
+    }
+  };
+  const updateUserProfile = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Update fields if provided
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+  
+      if (req.body.password) {
+        const bcrypt = require('bcryptjs');
+        user.password = await bcrypt.hash(req.body.password, 10);
+      }
+  
+      const updatedUser = await user.save();
+  
+      res.json({
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role
+      });
+    } catch (err) {
+      res.status(500).json({ message: 'Error updating profile', error: err.message });
+    }
+  };
+  const getAllUsers = async (req, res) => {
+    try {
+      const users = await User.find().select('-password'); // hide passwords
+      res.json(users);
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to fetch users', error: err.message });
+    }
+  };const getUserById = async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id).select('-password');
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to fetch user', error: err.message });
+    }
+  };
+  
+  const updateUserById = async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Update fields if provided
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      user.role = req.body.role || user.role;
+  
+      const updatedUser = await user.save();
+  
+      res.json({
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role
+      });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to update user', error: err.message });
+    }
+  };
+  const deleteUserById = async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      await user.deleteOne();
+  
+      res.json({ message: `User ${user.name} deleted successfully` });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to delete user', error: err.message });
+    }
+  };
+  
+  module.exports = {
+    registerUser,
+    loginUser,
+    getUserProfile,
+    updateUserProfile,
+    getAllUsers,
+    getUserById,
+    updateUserById,
+    deleteUserById 
+  };
+  
+  
+  
+  
+  const crypto = require('crypto');
+  const nodemailer = require('nodemailer');
+  const User = require('../models/User');
+  
+  const otpStore = new Map();
+  
+  
+  const sendOtpEmail = async (email, otp) => {
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', // or any other email provider
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your OTP for Password Reset',
+      text: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
+    };
+  
+    await transporter.sendMail(mailOptions);
+  };
+  
+  
+  const requestPasswordReset = async (req, res) => {
+    const { email } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      otpStore.set(email, { otp, expires: Date.now() + 10 * 60 * 1000 }); // 10 minutes expiry
+  
+      await sendOtpEmail(email, otp);
+      res.json({ message: 'OTP sent to email' });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to send OTP', error: err.message });
+    }
+  };
+  
+  const resetPasswordWithOtp = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    try {
+      const record = otpStore.get(email);
+      if (!record) return res.status(400).json({ message: 'OTP not found or expired' });
+  
+      if (record.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+  
+      if (Date.now() > record.expires) {
+        otpStore.delete(email);
+        return res.status(400).json({ message: 'OTP expired' });
+      }
+  
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      const bcrypt = require('bcryptjs');
+      user.password = await bcrypt.hash(newPassword, 10);
       await user.save();
-
-      return res.status(500).json({ 
-        message: 'Email could not be sent',
-        error: err.message 
-      });
+  
+      otpStore.delete(email);
+      res.json({ message: 'Password reset successful' });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to reset password', error: err.message });
     }
-  } catch (err) {
-    res.status(500).json({ 
-      message: 'Error processing request', 
-      error: err.message 
-    });
-  }
-};
-
-// Function to reset password
-const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ 
-        message: 'Invalid or expired token' 
-      });
-    }
-
-    // Set new password
-    user.password = await bcrypt.hash(password, 10); // Hash the new password
-    user.resetPasswordToken = undefined; // Clear reset token
-    user.resetPasswordExpires = undefined; // Clear expiry time
-    await user.save(); // Save the user document
-
-    // Create new JWT
-    const authToken = jwt.sign(
-      { id: user._id, role: user.role }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
-
-    res.status(200).json({
-      success: true,
-      token: authToken,
-      message: 'Password updated successfully'
-    });
-  } catch (err) {
-    res.status(500).json({ 
-      message: 'Error resetting password', 
-      error: err.message 
-    });
-  }
-};
-
-// Function to get user profile
-const getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password'); // Fetch user details excluding password
-    res.json(user); // Send user details in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch user', error: err.message }); // Handle errors during fetching user profile
-  }
-};
-
-// Function to update user profile
-const updateUserProfile = async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.user.id, req.body, { new: true }).select('-password'); // Update user profile
-    res.json(user); // Send updated user profile in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update user profile', error: err.message }); // Handle errors during profile update
-  }
-};
-
-// Function to get all users (Admin)
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find(); // Fetch all users
-    res.json(users); // Send list of users in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch users', error: err.message }); // Handle errors during fetching users
-  }
-};
-
-// Function to get user by ID (Admin)
-const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password'); // Fetch user details excluding password
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
-    }
-    res.json(user); // Send user details in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch user', error: err.message }); // Handle errors during fetching user by ID
-  }
-};
-
-// Function to update user by ID (Admin)
-const updateUserById = async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password'); // Update user details
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
-    }
-    res.json(user); // Send updated user details in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update user', error: err.message }); // Handle errors during user update
-  }
-};
-
-// Function to delete user by ID (Admin)
-const deleteUserById = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id); // Delete user by ID
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
-    }
-    res.json({ message: 'User removed' }); // Send success message in the response
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to delete user', error: err.message }); // Handle errors during user deletion
-  }
-};
-
-module.exports = {
-  registerUser,
-  loginUser,
-  forgotPassword,
-  resetPassword,
-  getUserProfile,
-  updateUserProfile,
-  getAllUsers,
-  getUserById,
-  updateUserById,
-  deleteUserById
-};
+  };
+  
+  module.exports.requestPasswordReset = requestPasswordReset;
+  module.exports.resetPasswordWithOtp = resetPasswordWithOtp;

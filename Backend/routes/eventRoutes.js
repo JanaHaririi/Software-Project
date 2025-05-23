@@ -1,55 +1,24 @@
-// Import the express library to create routes
 const express = require('express');
-
-// Create a new router object using express
 const router = express.Router();
-
-// Import authentication and role-based authorization middleware
-const { authenticate, authorizeRoles } = require('../middleware/authorization');
-
-// Import all controller functions related to events
 const {
   getAllEvents,
-  getEventById,
   createEvent,
   updateEvent,
   deleteEvent,
-  getOrganizerEvents,
-  getOrganizerEventsAnalytics
+  getUserEvents,
+  getUserEventsAnalytics,
 } = require('../controllers/eventController');
+const authMiddleware = require('../middleware/authentication');
+const authorizeRoles = require('../middleware/authorization');
 
-// ========================
-// Public Routes (Accessible by anyone)
-// ========================
-
-// Route to get all events (public access)
+// Public route to get all approved events
 router.get('/', getAllEvents);
 
-// Route to get a specific event by ID (public access)
-router.get('/:id', getEventById);
+// Organizer routes
+router.post('/', authMiddleware, authorizeRoles('organizer'), createEvent);
+router.put('/:id', authMiddleware, authorizeRoles('organizer', 'admin'), updateEvent);
+router.delete('/:id', authMiddleware, authorizeRoles('organizer', 'admin'), deleteEvent);
+router.get('/user/events', authMiddleware, authorizeRoles('organizer'), getUserEvents);
+router.get('/user/events/analytics', authMiddleware, authorizeRoles('organizer'), getUserEventsAnalytics);
 
-// ========================
-// Organizer Routes (Restricted to organizers only)
-// ========================
-
-// Route to create a new event (accessible only by authenticated organizers)
-router.post('/', authenticate, authorizeRoles('organizer'), createEvent);
-
-// Route to get all events created by the logged-in organizer
-router.get('/organizer/events', authenticate, authorizeRoles('organizer'), getOrganizerEvents);
-
-// Route to get analytics data for the organizer's events
-router.get('/organizer/analytics', authenticate, authorizeRoles('organizer'), getOrganizerEventsAnalytics);
-
-// ========================
-// Organizer or Admin Routes
-// ========================
-
-// Route to update an event by ID (accessible by organizers and admins)
-router.put('/:id', authenticate, authorizeRoles('organizer', 'admin'), updateEvent);
-
-// Route to delete an event by ID (accessible by organizers and admins)
-router.delete('/:id', authenticate, authorizeRoles('organizer', 'admin'), deleteEvent);
-
-// Export the router to be used in the main application
 module.exports = router;

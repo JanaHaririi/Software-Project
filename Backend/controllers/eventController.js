@@ -1,150 +1,124 @@
-const Event = require('../models/Event'); // Import the Event model for database interactions
-const Booking = require('../models/Booking'); // Import the Booking model for database interactions
+const Event = require('../models/Event');
+const Booking = require('../models/booking');
 
-// @desc    Get all events
-// @access  Public
+// Get all approved events (public)
 const getAllEvents = async (req, res) => {
   try {
-    // Filter by status if provided in query parameters
-    const { status } = req.query;
-    const filter = {};
-    if (status) filter.status = status;
-    
-    const events = await Event.find(filter).populate('organizer', 'name email');
+    const events = await Event.find({ status: "approved" });
     res.json(events);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch events', error: err.message });
   }
 };
 
-// @desc    Get single event
-// @access  Public
-const getEventById = async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id).populate('organizer', 'name email');
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
-    res.json(event);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch event', error: err.message });
-  }
-};
-
-// @desc    Create new event
-// @access  Private/Organizer
+// Create a new event (organizer only)
 const createEvent = async (req, res) => {
   try {
-    const { name, description, date, location, price, totalTickets } = req.body;
-    
-    const event = await Event.create({
-      name,
+    const { title, description, date, location, category, image, ticketPrice, totalTickets } = req.body;
+    const event = new Event({
+      title,
       description,
       date,
       location,
-      price,
+      category,
+      image,
+      ticketPrice,
       totalTickets,
-      availableTickets: totalTickets,
+      remainingTickets: totalTickets,
       organizer: req.user.id,
-      status: 'pending' // Events need admin approval
+      status: "pending"
     });
-
+    await event.save();
     res.status(201).json(event);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create event', error: err.message });
   }
 };
 
-// @desc    Update event
-// @access  Private/Organizer or Admin
+// Update an event (organizer or admin)
 const updateEvent = async (req, res) => {
   try {
-    let event = await Event.findById(req.params.id);
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    // Check if user is organizer or admin
+    // Only organizer or admin can update
     if (req.user.role !== 'admin' && event.organizer.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this event' });
     }
 
-    // Organizers can only update certain fields
-    if (req.user.role === 'organizer') {
-      const { totalTickets, date, location } = req.body;      
-      // Calculate new available tickets if totalTickets is updated
-      if (totalTickets) {
-        const ticketsDifference = totalTickets - event.totalTickets;
-        event.availableTickets += ticketsDifference;
-        event.totalTickets = totalTickets;
-      }
-      
-      if (date) event.date = date;
-      if (location) event.location = location;
-    } 
-    // Admins can update status
-    else if (req.user.role === 'admin' && req.body.status) {
-      event.status = req.body.status;
+    const { title, description, date, location, category, image, ticketPrice, totalTickets, status } = req.body;
+
+    // Update fields if provided
+    if (title) event.title = title;
+    if (description) event.description = description;
+    if (date) event.date = date;
+    if (location) event.location = location;
+    if (category) event.category = category;
+    if (image) event.image = image;
+    if (ticketPrice !== undefined) event.ticketPrice = ticketPrice;
+    if (totalTickets !== undefined) {
+      // Adjust remainingTickets accordingly
+      const diff = totalTickets - event.totalTickets;
+      event.totalTickets = totalTickets;
+      event.remainingTickets += diff;
+      if (event.remainingTickets < 0) event.remainingTickets = 0;
+    }
+    if (status && req.user.role === 'admin') {
+      event.status = status; // admin can approve or decline
     }
 
-    const updatedEvent = await event.save();
-    res.json(updatedEvent);
+    await event.save();
+    res.json(event);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update event', error: err.message });
   }
 };
 
-// @desc    Delete event
-// @access  Private/Organizer or Admin
+// Delete an event (organizer or admin)
 const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
+    if (!event) return res.status(404).json({ message: 'Event not found' });
 
-    // Check if user is organizer or admin
     if (req.user.role !== 'admin' && event.organizer.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this event' });
     }
 
     await event.deleteOne();
-    res.json({ message: 'Event removed' });
+    res.json({ message: 'Event deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete event', error: err.message });
   }
 };
 
-// @desc    Get organizer's events
-// @access  Private/Organizer
-const getOrganizerEvents = async (req, res) => {
+// Get events of current organizer
+const getUserEvents = async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user.id });
     res.json(events);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch events', error: err.message });
+    res.status(500).json({ message: 'Failed to fetch user events', error: err.message });
   }
 };
 
-// @desc    Get organizer's events analytics
-// @access  Private/Organizer
-const getOrganizerEventsAnalytics = async (req, res) => {
+// Get analytics for current organizer's events (percentage of tickets booked)
+const getUserEventsAnalytics = async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user.id });
-    
-    const analytics = await Promise.all(events.map(async (event) => {
-      const bookingsCount = await Booking.countDocuments({ event: event._id });
-      const percentageBooked = (bookingsCount / event.totalTickets) * 100;
-      
-      return {
+    const analytics = [];
+
+    for (const event of events) {
+      const totalTickets = event.totalTickets;
+      const remainingTickets = event.remainingTickets;
+      const bookedTickets = totalTickets - remainingTickets;
+      const percentageBooked = totalTickets > 0 ? (bookedTickets / totalTickets) * 100 : 0;
+
+      analytics.push({
         eventId: event._id,
-        eventName: event.name,
-        totalTickets: event.totalTickets,
-        ticketsBooked: bookingsCount,
+        title: event.title,
         percentageBooked: percentageBooked.toFixed(2),
-        revenue: bookingsCount * event.price
-      };
-    }));
+      });
+    }
 
     res.json(analytics);
   } catch (err) {
@@ -154,10 +128,9 @@ const getOrganizerEventsAnalytics = async (req, res) => {
 
 module.exports = {
   getAllEvents,
-  getEventById,
   createEvent,
   updateEvent,
   deleteEvent,
-  getOrganizerEvents,
-  getOrganizerEventsAnalytics
+  getUserEvents,
+  getUserEventsAnalytics,
 };

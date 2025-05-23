@@ -1,67 +1,46 @@
-// Import the express library to create routes
 const express = require('express');
-
-// Create a new router object using express
 const router = express.Router();
+const { registerUser, loginUser, getUserProfile, updateUserProfile ,getAllUsers , getUserById ,updateUserById , deleteUserById } = require('../controllers/userController');
+const authMiddleware = require('../middleware/authentication');
+const authorizeRoles = require('../middleware/authorization');
 
-// Import authentication and role-based authorization middleware
-const { authenticate, authorizeRoles } = require('../middleware/authorization');
-
-// Import all controller functions related to user operations
-const {
-  registerUser,
-  loginUser,
-  forgotPassword,
-  resetPassword,
-  getAllUsers,
-  getUserById,
-  updateUserById,
-  deleteUserById,
-  getUserProfile,
-  updateUserProfile
-} = require('../controllers/userController');
-
-// ========================
-// Public Routes (No authentication required)
-// ========================
-
-// Route to register a new user
+// Public routes
 router.post('/register', registerUser);
-
-// Route to log in an existing user
 router.post('/login', loginUser);
 
-// Route to request a password reset link
-router.post('/forgot-password', forgotPassword);
-
-// Route to reset password using a token
-router.put('/reset-password/:token', resetPassword);
-
-// ========================
-// Admin Routes (Only accessible by admin users)
-// ========================
-
-// Route to get all users in the system
-router.get('/users', authenticate, authorizeRoles('admin'), getAllUsers);
-
-// Route to get a single user by their ID
-router.get('/users/:id', authenticate, authorizeRoles('admin'), getUserById);
-
-// Route to update a user's data by their ID
-router.put('/users/:id', authenticate, authorizeRoles('admin'), updateUserById);
-
-// Route to delete a user by their ID
-router.delete('/users/:id', authenticate, authorizeRoles('admin'), deleteUserById);
-
-// ========================
-// Authenticated User Routes
-// ========================
-
-// Route to get the profile of the currently logged-in user
-router.get('/profile', authenticate, getUserProfile);
-
-// Route to update the profile of the currently logged-in user
-router.put('/profile', authenticate, updateUserProfile);
-
-// Export the router to be used in the main application
+// Protected route
+router.get('/profile', authMiddleware, getUserProfile);
+router.put('/profile', authMiddleware, updateUserProfile);
+router.get(
+    '/',
+    authMiddleware,
+    authorizeRoles('admin'),
+    getAllUsers
+  );
+  router.get(
+    '/:id',
+    authMiddleware,
+    authorizeRoles('admin'),
+    getUserById
+  );
+  router.put(
+    '/:id',
+    authMiddleware,
+    authorizeRoles('admin'),
+    updateUserById
+  );
+  router.delete(
+    '/:id',
+    authMiddleware,
+    authorizeRoles('admin'),
+    deleteUserById
+  );
+  
 module.exports = router;
+
+
+
+const { requestPasswordReset, resetPasswordWithOtp } = require('../controllers/userController');
+
+// Public routes for password reset
+router.put('/forgetPassword/request', requestPasswordReset);
