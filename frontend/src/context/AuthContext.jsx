@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import api from "../utils/api"; // make sure this points to your axios instance
+import api from "../utils/api"; // Make sure this points to your axios instance
 
 export const AuthContext = createContext();
 
@@ -7,16 +7,24 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Optional: for showing errors
 
   // Load user from localStorage when app loads
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
-    if (user && token) {
-      setCurrentUser(JSON.parse(user));
-      setToken(token);
+    if (storedUser && storedToken) {
+      try {
+        // Safely parse stored user and token
+        setCurrentUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } catch (error) {
+        console.error("Error parsing stored user:", error);
+        setError("Failed to load user data");
+      }
     }
+
     setLoading(false);
   }, []);
 
@@ -34,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
-      throw error; // Optional: rethrow so UI can handle it
+      setError("Invalid credentials");
     }
   };
 
@@ -44,7 +52,7 @@ export const AuthProvider = ({ children }) => {
       await api.post("/auth/register", formData);
     } catch (error) {
       console.error("Registration failed:", error.response?.data || error.message);
-      throw error;
+      setError("Registration failed");
     }
   };
 
@@ -62,7 +70,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, token, login, register, logout, loading }}
+      value={{
+        currentUser,
+        token,
+        login,
+        register,
+        logout,
+        loading,
+        error, // Optional: for error handling
+      }}
     >
       {children}
     </AuthContext.Provider>
