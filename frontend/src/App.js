@@ -7,6 +7,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import AdminUsersPage from './components/Admin/AdminUsersPage';
 import AdminEventsPage from './components/Admin/AdminEventsPage';
 import ProtectedRoute from './routes/ProtectedRoute';
+import AdminDashboard from './pages/AdminDashboard';
+
 
 function App() {
   return (
@@ -34,6 +36,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+          path="/admin"
+          element={
+             <ProtectedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+          </ProtectedRoute>
+          }
+          />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>
