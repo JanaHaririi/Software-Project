@@ -5,7 +5,7 @@ import LoginForm from './pages/LoginForm';
 import RegisterForm from './pages/RegisterForm';
 import ForgotPassword from './pages/ForgotPassword';
 import AdminUsersPage from './components/Admin/AdminUsersPage';
-import AdminEventsPage from './components/Admin/AdminEventsPage.jsx';
+import AdminEventsPage from './components/Admin/AdminEventsPage';
 import ProtectedRoute from './routes/ProtectedRoute';
 
 function App() {
@@ -13,13 +13,11 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Admin Routes (Protected) */}
           <Route
             path="/admin/users"
             element={
