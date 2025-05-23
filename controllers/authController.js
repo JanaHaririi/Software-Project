@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
+// Register a new user
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -18,12 +19,8 @@ const register = async (req, res) => {
       role: role || 'user'
     });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    const token = generateToken(user._id, user.role);
+    setTokenCookie(res, token);
 
     res.status(201).json({
       id: user._id,
@@ -37,6 +34,7 @@ const register = async (req, res) => {
   }
 };
 
+// Login user
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -51,12 +49,8 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    const token = generateToken(user._id, user.role);
+    setTokenCookie(res, token);
 
     res.json({
       id: user._id,
@@ -70,6 +64,7 @@ const login = async (req, res) => {
   }
 };
 
+// Logout user
 const logout = (req, res) => {
   res.cookie('token', '', {
     httpOnly: true,
@@ -78,6 +73,7 @@ const logout = (req, res) => {
   res.json({ message: 'Logged out successfully' });
 };
 
+// Get current user
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -90,10 +86,12 @@ const getMe = async (req, res) => {
   }
 };
 
+// Token generation
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
+// Set token in HTTP-only cookie
 const setTokenCookie = (res, token) => {
   res.cookie('token', token, {
     httpOnly: true,

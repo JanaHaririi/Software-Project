@@ -12,7 +12,6 @@ const registerUser = async (req, res) => {
   console.log("🧾 Received body:", req.body);
   const { name, email, password } = req.body; // Destructure the request body for user details
 
-
   try {
     // Check if user exists in the database
     const userExists = await User.findOne({ email });
