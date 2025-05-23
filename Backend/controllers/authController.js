@@ -6,19 +6,24 @@ const register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
+    // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // Create user (password hashing done by pre-save middleware)
     const user = await User.create({
       name,
       email,
-      password: await bcrypt.hash(password, 10),
+      password, // <-- DO NOT hash here, mongoose middleware hashes it
       role: role || 'user'
     });
 
+    // Generate JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    // Set cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -33,6 +38,7 @@ const register = async (req, res) => {
       token
     });
   } catch (err) {
+    console.error('Registration error:', err);
     res.status(500).json({ message: 'Registration failed', error: err.message });
   }
 };
@@ -52,6 +58,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -66,6 +73,7 @@ const login = async (req, res) => {
       token
     });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
@@ -88,18 +96,6 @@ const getMe = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch user', error: err.message });
   }
-};
-
-const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-};
-
-const setTokenCookie = (res, token) => {
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  });
 };
 
 module.exports = {

@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');               // <-- import cors
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
@@ -13,8 +14,15 @@ dotenv.config();
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// Enable CORS for frontend URL
+app.use(cors({
+  origin: 'http://localhost:5174',   // frontend URL (adjust if needed)
+  credentials: true,                 // enable sending cookies/auth headers
+}));
 
 // Connect to MongoDB using the connection string from environment variables
 mongoose.connect(process.env.MONGO_URI)
