@@ -7,7 +7,7 @@ const EventAnalytics = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/events/my-events/analytics")
+    axios.get("/api/events/user/events/analytics")
       .then(res => setData(res.data))
       .catch(() => alert("Failed to fetch analytics"));
   }, []);

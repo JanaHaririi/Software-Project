@@ -116,7 +116,7 @@ const getUserEventsAnalytics = async (req, res) => {
       analytics.push({
         eventId: event._id,
         title: event.title,
-        percentageBooked: percentageBooked.toFixed(2),
+        percentageBooked: Math.round(percentageBooked * 100) / 100,
       });
     }
 
