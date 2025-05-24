@@ -1,7 +1,7 @@
 {
   "name": "your-project-name",
   "version": "1.0.0",
-  "description": "",
+  "description": "In this project we will be doing an online ticketing system; it is to allow users to browse, search and purchase tickets for various events.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
