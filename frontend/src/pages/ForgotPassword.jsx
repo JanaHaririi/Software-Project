@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../utils/api";
 import "./AuthForm.css"; 
+import React from "react";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

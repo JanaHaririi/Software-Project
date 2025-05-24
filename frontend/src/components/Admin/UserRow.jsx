@@ -1,18 +1,38 @@
 import React from 'react';
+import api from '../../api';
+
 
 const UserRow = ({ user }) => {
-  const handleDelete = () => {
-    // TODO: Confirm and call DELETE /users/:id
-    alert(`Delete user: ${user.email}`);
+  const handleDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${user.email}?`)) return;
+  
+    try {
+      await api.delete(`/users/${user._id}`);
+      alert('User deleted');
+      // Optional: refresh user list after deletion
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete user');
+    }
   };
+  
 
-  const handleRoleChange = () => {
-    // TODO: Trigger modal or simple prompt
-    const newRole = prompt('Enter new role (user, organizer, admin):', user.role);
-    if (!newRole || newRole === user.role) return;
-    // TODO: Call PUT /users/:id with new role
-    alert(`Change role to ${newRole} for ${user.email}`);
-  };
+const handleRoleChange = async () => {
+  const newRole = prompt('Enter new role (user, organizer, admin):', user.role);
+  if (!newRole || newRole === user.role) return;
+
+  try {
+    await api.put(`/users/${user._id}`, { role: newRole });
+    alert(`Role updated to ${newRole}`);
+    // Optional: refresh list after change
+  } catch (err) {
+    console.error(err);
+    alert('Failed to update role');
+  }
+};
+
+
+
 
   return (
     <tr className="border-t">

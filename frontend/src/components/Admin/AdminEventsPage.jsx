@@ -18,14 +18,27 @@ const AdminEventsPage = () => {
   }, []);
 
   const handleApprove = async (id) => {
-    // TODO: PUT /events/:id to update status
-    alert(`Approve event ID: ${id}`);
+    try {
+      await axios.put(`/events/${id}`, { status: 'approved' });
+      alert('Event approved');
+      // Optional: refresh events list
+    } catch (err) {
+      console.error(err);
+      alert('Failed to approve event');
+    }
   };
-
+  
   const handleDecline = async (id) => {
-    // TODO: PUT /events/:id to update status
-    alert(`Decline event ID: ${id}`);
+    try {
+      await axios.put(`/events/${id}`, { status: 'declined' });
+      alert('Event declined');
+      // Optional: refresh events list
+    } catch (err) {
+      console.error(err);
+      alert('Failed to decline event');
+    }
   };
+  
 
   return (
     <div className="p-4">

@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import "./AuthForm.css";
+import React from "react";
 
 export default function LoginForm() {
   const { login } = useContext(AuthContext);

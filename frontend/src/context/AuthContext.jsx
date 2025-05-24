@@ -1,6 +1,7 @@
 // File: src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
 import api from "../utils/api"; // Your configured axios instance
+import React from "react";
 
 export const AuthContext = createContext();
 
@@ -85,3 +86,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
