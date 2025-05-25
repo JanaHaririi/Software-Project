@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import api from "../utils/api"; // Make sure this points to your axios instance
+import api from "../utils/api";
 
 export const AuthContext = createContext();
 
@@ -7,56 +7,65 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Optional: for showing errors
+  const [error, setError] = useState(null);
 
-  // Load user from localStorage when app loads
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
 
     if (storedUser && storedToken) {
       try {
-        // Safely parse stored user and token
-        setCurrentUser(JSON.parse(storedUser));
-        setToken(storedToken);
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && storedToken) {
+          setCurrentUser(parsedUser);
+          setToken(storedToken);
+        }
       } catch (error) {
         console.error("Error parsing stored user:", error);
         setError("Failed to load user data");
       }
     }
-
     setLoading(false);
+    console.log("AuthContext initialized - loading:", loading, "currentUser:", currentUser); // Debug log
   }, []);
 
-  // Login function
   const login = async (email, password) => {
     try {
       const res = await api.post("/auth/login", { email, password });
-
-      // Check if response has user and token
       const { user, token } = res.data;
+      if (!user || !token) {
+        throw new Error("Invalid response from server: missing user or token");
+      }
+      setCurrentUser(user);
+      setToken(token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      console.log("Login successful - currentUser:", user); // Debug log
+    } catch (error) {
+      console.error("Login failed:", error.response?.data || error.message);
+      setError("Invalid credentials");
+      throw error;
+    }
+  };
 
+  const register = async (formData) => {
+    try {
+      const res = await api.post("/auth/register", formData);
+      const { user, token } = res.data;
+      if (!user || !token) {
+        throw new Error("Invalid response from server: missing user or token");
+      }
       setCurrentUser(user);
       setToken(token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
     } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
-      setError("Invalid credentials");
-    }
-  };
-
-  // Register function
-  const register = async (formData) => {
-    try {
-      await api.post("/auth/register", formData);
-    } catch (error) {
       console.error("Registration failed:", error.response?.data || error.message);
       setError("Registration failed");
+      throw error;
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
       await api.post("/auth/logout");
@@ -65,6 +74,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.clear();
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);
+      setError("Logout failed");
+      throw error;
     }
   };
 
@@ -77,7 +88,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         loading,
-        error, // Optional: for error handling
+        error,
       }}
     >
       {children}
