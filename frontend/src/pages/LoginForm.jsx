@@ -16,12 +16,14 @@ export default function LoginForm() {
   setError("");
 
   try {
-    const user = await login(email, password); // 👈 make sure login() returns user object
+    const user = await login(email, password); 
 
     // Redirect based on user role
-    if (user.role === "admin") navigate("/admin");
-    else if (user.role === "organizer") navigate("/my-events");
-    else navigate("/profile"); 
+if (user.role === "admin") navigate("/admin/users");
+else if (user.role === "organizer") navigate("/my-events");
+else navigate("/profile");
+
+
 
   } catch (err) {
     setError(err.response?.data?.message || "Login failed.");
