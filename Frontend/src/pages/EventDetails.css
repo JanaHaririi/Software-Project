@@ -1,0 +1,46 @@
+.event-details {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.event-details h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.event-info p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.booking-form {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.booking-form label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .event-details {
+    padding: 1rem;
+  }
+
+  .event-info p {
+    font-size: 1rem;
+  }
+
+  .booking-form {
+    padding: 0.75rem;
+  }
+
+  .booking-form input {
+    width: 80px;
+  }
+}

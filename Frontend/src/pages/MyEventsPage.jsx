@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import EventCard from "../components/EventCard";
 import api from "../utils/api";
 
 export default function MyEventsPage() {
@@ -37,31 +38,20 @@ export default function MyEventsPage() {
         <h2>My Events</h2>
         <button
           onClick={() => navigate("/my-events/new")}
-          style={{ padding: "0.5rem 1rem", backgroundColor: "#0077ff", color: "white", border: "none", marginBottom: "1rem" }}
+          style={{ padding: "0.5rem 1rem", backgroundColor: "#0077ff", color: "white", border: "none", marginBottom: "1rem", borderRadius: "4px" }}
         >
           Create New Event
         </button>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {events.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "1rem" }}>
             {events.map(event => (
-              <div key={event.id} style={{ border: "1px solid #ddd", padding: "1rem" }}>
-                <h3>{event.title}</h3>
-                <p>Date: {new Date(event.date).toLocaleDateString()}</p>
-                <p>Status: {event.status}</p>
-                <button
-                  onClick={() => navigate(`/my-events/${event.id}/edit`)}
-                  style={{ padding: "0.5rem", marginRight: "0.5rem", backgroundColor: "#0077ff", color: "white", border: "none" }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(event.id)}
-                  style={{ padding: "0.5rem", backgroundColor: "#ff4444", color: "white", border: "none" }}
-                >
-                  Delete
-                </button>
-              </div>
+              <EventCard
+                key={event.id}
+                event={event}
+                onEdit={() => navigate(`/my-events/${event.id}/edit`)}
+                onDelete={() => handleDelete(event.id)}
+              />
             ))}
           </div>
         ) : (

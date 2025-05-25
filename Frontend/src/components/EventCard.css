@@ -1,0 +1,32 @@
+.event-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.event-card:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .event-card {
+    padding: 0.75rem;
+  }
+
+  .event-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .event-card p {
+    font-size: 0.9rem;
+  }
+
+  .event-card button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
