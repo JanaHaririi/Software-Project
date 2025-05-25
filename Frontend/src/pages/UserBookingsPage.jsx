@@ -1,21 +1,24 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import EventCard from "../components/EventCard";
 import api from "../utils/api";
+import Loader from "../components/Loader";
 
 export default function UserBookingsPage() {
-  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await api.get("/api/v1/users/bookings");
+        const res = await api.get("/api/v1/bookings");
         setBookings(res.data);
       } catch (err) {
         setError("Failed to fetch bookings.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchBookings();
@@ -23,39 +26,44 @@ export default function UserBookingsPage() {
 
   const handleCancel = async (bookingId) => {
     try {
-      await api.delete(`/api/v1/bookings/${bookingId}`);
-      setBookings(bookings.filter(booking => booking.id !== bookingId));
+      await api.put(`/api/v1/bookings/${bookingId}`, { status: "Canceled" });
+      setBookings(bookings.map(booking =>
+        booking.id === bookingId ? { ...booking, status: "Canceled" } : booking
+      ));
     } catch (err) {
       setError("Failed to cancel booking.");
     }
   };
+
+  if (loading) return <Loader />;
+  if (error) return <div style={{ color: "red", textAlign: "center", padding: "2rem" }}>{error}</div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
       <div style={{ flex: 1, padding: "2rem" }}>
         <h2>My Bookings</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
         {bookings.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "1rem" }}>
             {bookings.map(booking => (
-              <div key={booking.id} style={{ border: "1px solid #ddd", padding: "1rem" }}>
-                <h3>{booking.event.title}</h3>
+              <div key={booking.id}>
+                <EventCard event={booking.event} showStatus={false} />
                 <p>Quantity: {booking.quantity}</p>
-                <p>Total Price: ${booking.totalPrice}</p>
+                <p>Total Price: ${(booking.quantity * booking.event.ticketPrice).toFixed(2)}</p>
                 <p>Status: {booking.status}</p>
-                <button
-                  onClick={() => navigate(`/bookings/${booking.id}`)}
-                  style={{ padding: "0.5rem", marginRight: "0.5rem", backgroundColor: "#0077ff", color: "white", border: "none" }}
-                >
-                  View Details
-                </button>
-                {booking.status === "Confirmed" && (
+                {booking.status !== "Canceled" && (
                   <button
                     onClick={() => handleCancel(booking.id)}
-                    style={{ padding: "0.5rem", backgroundColor: "#ff4444", color: "white", border: "none" }}
+                    style={{
+                      padding: "0.5rem 1rem",
+                      backgroundColor: "#ff4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
                   >
-                    Cancel
+                    Cancel Booking
                   </button>
                 )}
               </div>

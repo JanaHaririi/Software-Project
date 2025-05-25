@@ -1,0 +1,39 @@
+.event-analytics-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.event-analytics {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.event-analytics h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  margin-bottom: 2rem;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .event-analytics {
+    padding: 1rem;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+}

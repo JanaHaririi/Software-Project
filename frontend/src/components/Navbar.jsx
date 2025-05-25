@@ -1,6 +1,8 @@
+// src/components/Navbar.jsx
 import { useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
   const { currentUser, logout } = useContext(AuthContext);
@@ -9,64 +11,61 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/"); // Redirect to homepage after logout
-    } catch (error) {
-      console.error("Logout failed:", error);
+      toast.success("Logged out successfully!");
+      navigate("/");
+    } catch (err) {
+      toast.error("Failed to log out. Please try again.");
     }
   };
 
   return (
-    <nav style={{ backgroundColor: "#0077ff", padding: "1rem", color: "white" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Link to="/" style={{ color: "white", textDecoration: "none", fontSize: "1.5rem" }}>
-          EventHub
-        </Link>
-        <div>
-          {!currentUser ? (
-            <>
-              <Link to="/login" style={{ color: "white", marginRight: "1rem" }}>
-                Login
-              </Link>
-              <Link to="/register" style={{ color: "white" }}>
-                Register
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link to="/profile" style={{ color: "white", marginRight: "1rem" }}>
-                Profile
-              </Link>
-              {currentUser.role === "organizer" && (
-                <>
-                  <Link to="/my-events" style={{ color: "white", marginRight: "1rem" }}>
-                    My Events
-                  </Link>
-                  <Link to="/my-events/analytica" style={{ color: "white", marginRight: "1rem" }}>
-                    Analytics
-                  </Link>
-                </>
-              )}
-              {currentUser.role === "user" && (
-                <Link to="/bookings" style={{ color: "white", marginRight: "1rem" }}>
-                  My Bookings
-                </Link>
-              )}
-              {currentUser.role === "admin" && (
-                <>
-                  <Link to="/admin/events" style={{ color: "white", marginRight: "1rem" }}>
-                    Manage Events
-                  </Link>
-                  <Link to="/admin/users" style={{ color: "white", marginRight: "1rem" }}>
-                    Manage Users
-                  </Link>
-                </>
-              )}
-              <button onClick={handleLogout} style={{ color: "white", background: "none", border: "none" }}>
-                Logout
+    <nav style={{ padding: "1rem", backgroundColor: "#0077ff", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <h1 onClick={() => navigate("/")} style={{ cursor: "pointer" }}>EventHub</h1>
+      <div style={{ display: "flex", gap: "1rem" }}>
+        {!currentUser ? (
+          <>
+            <button onClick={() => navigate("/login")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+              Login
+            </button>
+            <button onClick={() => navigate("/register")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+              Register
+            </button>
+          </>
+        ) : (
+          <>
+            {currentUser.role === "organizer" && (
+              <button onClick={() => navigate("/my-events")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+                My Events
               </button>
-            </>
-          )}
-        </div>
+            )}
+            {currentUser.role === "admin" && (
+              <button onClick={() => navigate("/admin/events")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+                Manage Events
+              </button>
+            )}
+            {currentUser.role === "admin" && (
+              <button onClick={() => navigate("/admin/users")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+                Manage Users
+              </button>
+            )}
+            {currentUser.role === "admin" && (
+              <button onClick={() => navigate("/my-events/analytica")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+                Analytics
+              </button>
+            )}
+            <button onClick={() => navigate("/profile")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+              Profile
+            </button>
+            {currentUser.role === "user" && (
+              <button onClick={() => navigate("/bookings")} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+                My Bookings
+              </button>
+            )}
+            <button onClick={handleLogout} style={{ padding: "0.5rem 1rem", backgroundColor: "white", color: "#0077ff", border: "none", borderRadius: "4px" }}>
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

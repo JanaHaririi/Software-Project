@@ -1,25 +1,30 @@
+// src/pages/RegisterForm.jsx
 import { useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import "./AuthForm.css";
+import { toast } from "react-toastify";
+import "./RegisterForm.css";
 
 export default function RegisterForm() {
-  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const { register } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "user",
+    role: "user", // Default role
   });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -27,61 +32,82 @@ export default function RegisterForm() {
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Passwords do not match");
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("All fields are required");
+      toast.error("All fields are required");
       return;
     }
 
     try {
       await register(formData);
+      toast.success("Registration successful! Please log in.");
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed.");
+      setError(err.message || "Registration failed");
+      toast.error(err.message || "Registration failed");
     }
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div className="register-container">
       <Navbar />
-      <div className="form-container" style={{ flex: 1 }}>
+      <div className="register-form">
         <h2>Register</h2>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          <select name="role" value={formData.role} onChange={handleChange}>
-            <option value="user">Standard User</option>
-            <option value="organizer">Event Organizer</option>
-          </select>
+          <div className="form-group">
+            <label>Name:</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email:</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Role:</label>
+            <select name="role" value={formData.role} onChange={handleChange} required>
+              <option value="user">Standard User</option>
+              <option value="organizer">Event Organizer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
           <button type="submit">Register</button>
         </form>
       </div>
