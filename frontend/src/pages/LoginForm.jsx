@@ -12,16 +12,21 @@ export default function LoginForm() {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      await login(email, password);
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed.");
-    }
-  };
+  try {
+    const user = await login(email, password); // 👈 make sure login() returns user object
+
+    // Redirect based on user role
+    if (user.role === "admin") navigate("/admin");
+    else if (user.role === "organizer") navigate("/my-events");
+    else navigate("/profile"); 
+
+  } catch (err) {
+    setError(err.response?.data?.message || "Login failed.");
+  }
+};
 
   return (
     <div className="form-container">

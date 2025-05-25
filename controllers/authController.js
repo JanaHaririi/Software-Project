@@ -59,12 +59,15 @@ const login = async (req, res) => {
     });
 
     res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token
-    });
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  },
+  token
+});
+
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
