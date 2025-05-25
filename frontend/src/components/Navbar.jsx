@@ -3,6 +3,8 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import React from 'react';
+
 
 export default function Navbar() {
   const { currentUser, logout } = useContext(AuthContext);

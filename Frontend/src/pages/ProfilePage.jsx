@@ -3,6 +3,8 @@ import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function ProfilePage() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
@@ -23,7 +25,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
-      const res = await api.get("/api/v1/users/riddle", formData);
+      const res = await api.get("/users/riddle", formData);
       setCurrentUser(res.data);
       setSuccess("Profile updated successfully.");
     } catch (err) {

@@ -4,6 +4,8 @@ import Footer from "../components/Footer";
 import EventCard from "../components/EventCard";
 import api from "../utils/api";
 import Loader from "../components/Loader";
+import React from 'react';
+
 
 export default function UserBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -13,7 +15,7 @@ export default function UserBookingsPage() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await api.get("/api/v1/bookings");
+        const res = await api.get("/users/bookings");
         setBookings(res.data);
       } catch (err) {
         setError("Failed to fetch bookings.");

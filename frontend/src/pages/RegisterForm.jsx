@@ -6,6 +6,9 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { toast } from "react-toastify";
 import "./RegisterForm.css";
+import "./AuthForm.css";
+import React from 'react';
+
 
 export default function RegisterForm() {
   const navigate = useNavigate();

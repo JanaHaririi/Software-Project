@@ -6,6 +6,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
 import { toast } from "react-toastify";
+import React from 'react';
+
 
 export default function EventForm() {
   const navigate = useNavigate();

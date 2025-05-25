@@ -8,6 +8,8 @@ import EventCard from "../components/EventCard";
 import Loader from "../components/Loader";
 import api from "../utils/api";
 import { toast } from "react-toastify";
+import React from 'react';
+
 
 export default function AdminEventsPage() {
   const { currentUser } = useContext(AuthContext);

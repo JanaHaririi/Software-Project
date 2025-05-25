@@ -5,6 +5,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
 import "./EventDetails.css";
+import React from 'react';
+
 
 export default function EventDetails() {
   const { id } = useParams();

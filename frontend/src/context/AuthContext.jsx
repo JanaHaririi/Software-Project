@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import api from "../utils/api";
+import React from "react";
 
 export const AuthContext = createContext();
 
@@ -34,11 +35,10 @@ export const AuthProvider = ({ children }) => {
           setError("Session expired. Please log in again.");
         }
       }
-      setLoading(false);
-    };
-
-    validateSession();
-  }, []);
+    }
+    setLoading(false);
+    // Removed repetitive debug log
+  }, []); // Only run on component mount
 
   const login = async (email, password) => {
     try {

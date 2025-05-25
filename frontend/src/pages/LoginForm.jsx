@@ -4,6 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./AuthForm.css";
+import React from 'react';
+
 
 export default function LoginForm() {
   const { login } = useContext(AuthContext);

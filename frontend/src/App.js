@@ -18,6 +18,8 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import EventAnalytics from "./pages/EventAnalytics";
 import ProtectedRoute from "./components/ProtectedRoute";
+import React from 'react';
+
 
 function ErrorBoundary({ children }) {
   const { setError } = useContext(AuthContext);

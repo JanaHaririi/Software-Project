@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);

@@ -7,7 +7,6 @@ const Booking = require('../models/Booking');
 // @access  Public
 const getAllEvents = async (req, res) => {
   try {
-    // Filter by status if provided in query parameters
     const { status } = req.query;
     const filter = {};
     if (status) filter.status = status;
@@ -87,6 +86,7 @@ const updateEvent = async (req, res) => {
     }
 
     // Organizers can update certain fields
+    // Organizers can update limited fields
     if (req.user.role === 'organizer') {
       const { title, description, date, location, price, totalTickets } = req.body;
       if (title) event.name = title;
@@ -121,7 +121,6 @@ const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Check if user is organizer or admin
     if (req.user.role !== 'admin' && event.organizer.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this event' });
     }
