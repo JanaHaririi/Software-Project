@@ -1,19 +1,13 @@
+// src/pages/AdminDashboard.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import AdminLayout from '../components/Admin/AdminLayout';
 
 const AdminDashboard = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
-      <div className="space-y-4">
-        <Link to="/admin/users" className="block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Manage Users
-        </Link>
-        <Link to="/admin/events" className="block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-          Manage Events
-        </Link>
-      </div>
-    </div>
+    <AdminLayout>
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-6">Welcome to the Admin Dashboard</h1>
+      <p className="text-gray-600">Select a section from the sidebar to manage users or events.</p>
+    </AdminLayout>
   );
 };
 

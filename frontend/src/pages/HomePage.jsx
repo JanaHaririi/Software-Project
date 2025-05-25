@@ -11,6 +11,7 @@ export default function HomePage() {
       <div className="button-group">
         <button onClick={() => navigate("/login")}>Login</button>
         <button onClick={() => navigate("/register")}>Register</button>
+        <button onClick={()=> navigate("/admin")}>temporary admin dashboard button</button>
       </div>
     </div>
   );

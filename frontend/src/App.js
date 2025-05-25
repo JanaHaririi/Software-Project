@@ -6,7 +6,7 @@ import RegisterForm from './pages/RegisterForm';
 import ForgotPassword from './pages/ForgotPassword';
 import AdminUsersPage from './components/Admin/AdminUsersPage';
 import AdminEventsPage from './components/Admin/AdminEventsPage';
-import ProtectedRoute from './routes/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboard from './pages/AdminDashboard';
 import React from "react";
 
@@ -25,25 +25,25 @@ function App() {
           <Route
             path="/admin/users"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              //<ProtectedRoute allowedRoles={['admin']}>
                 <AdminUsersPage />
-              </ProtectedRoute>
+              //</ProtectedRoute>
             }
           />
           <Route
             path="/admin/events"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              //<ProtectedRoute allowedRoles={['admin']}>
                 <AdminEventsPage />
-              </ProtectedRoute>
+              //</ProtectedRoute>
             }
           />
           <Route
           path="/admin"
           element={
-             <ProtectedRoute allowedRoles={['admin']}>
+             //<ProtectedRoute allowedRoles={['admin']}>
               <AdminDashboard />
-          </ProtectedRoute>
+          //</ProtectedRoute>
           }
           />
 
