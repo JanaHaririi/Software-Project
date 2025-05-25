@@ -15,6 +15,8 @@ import AdminEventsPage from "./pages/AdminEventsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import React from 'react';
+
 
 function App() {
   return (

@@ -6,6 +6,8 @@ import Footer from "../components/Footer";
 import EventCard from "../components/EventCard";
 import api from "../utils/api";
 import "./HomePage.css";
+import React from 'react';
+
 
 export default function HomePage() {
   const navigate = useNavigate();

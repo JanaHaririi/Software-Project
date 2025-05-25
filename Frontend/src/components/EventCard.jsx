@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import React from 'react';
+
 
 const EventCard = ({ event, onEdit, onDelete, onApprove, onDecline, showStatus = true }) => {
   const navigate = useNavigate();

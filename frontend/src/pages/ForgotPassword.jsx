@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
 import "./AuthForm.css";
+import React from 'react';
+
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

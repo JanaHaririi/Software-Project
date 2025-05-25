@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import EventCard from "../components/EventCard";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function MyEventsPage() {
   const navigate = useNavigate();

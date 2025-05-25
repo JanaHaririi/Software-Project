@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function BookingDetails() {
   const { id } = useParams();

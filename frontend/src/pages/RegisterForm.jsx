@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./AuthForm.css";
+import React from 'react';
+
 
 export default function RegisterForm() {
   const { register } = useContext(AuthContext);

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function UserBookingsPage() {
   const navigate = useNavigate();

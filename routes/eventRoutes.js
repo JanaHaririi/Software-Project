@@ -1,55 +1,52 @@
-// Import the express library to create routes
+// routes/eventRoutes.js
 const express = require('express');
-
-// Create a new router object using express
 const router = express.Router();
 
 // Import authentication and role-based authorization middleware
 const { authenticate, authorizeRoles } = require('../middleware/authorization');
 
-// Import all controller functions related to events
+// Import event controller functions
 const {
+  createEvent,
   getAllEvents,
   getEventById,
-  createEvent,
   updateEvent,
   deleteEvent,
-  getOrganizerEvents,
-  getOrganizerEventsAnalytics
+  approveEvent,
+  declineEvent,
 } = require('../controllers/eventController');
 
 // ========================
-// Public Routes (Accessible by anyone)
+// Public Routes for Events
 // ========================
 
-// Route to get all events (public access)
+// Route to get all events
 router.get('/', getAllEvents);
 
-// Route to get a specific event by ID (public access)
+// Route to get a specific event by ID
 router.get('/:id', getEventById);
 
 // ========================
-// Organizer Routes (Restricted to organizers only)
+// Organizer Routes for Events
 // ========================
 
-// Route to create a new event (accessible only by authenticated organizers)
+// Route to create a new event (only for organizers)
 router.post('/', authenticate, authorizeRoles('organizer'), createEvent);
 
-// Route to get all events created by the logged-in organizer
-router.get('/organizer/events', authenticate, authorizeRoles('organizer'), getOrganizerEvents);
+// Route to update an event by ID (only for organizers)
+router.put('/:id', authenticate, authorizeRoles('organizer'), updateEvent);
 
-// Route to get analytics data for the organizer's events
-router.get('/organizer/analytics', authenticate, authorizeRoles('organizer'), getOrganizerEventsAnalytics);
+// Route to delete an event by ID (only for organizers)
+router.delete('/:id', authenticate, authorizeRoles('organizer'), deleteEvent);
 
 // ========================
-// Organizer or Admin Routes
+// Admin Routes for Approving/Declining Events
 // ========================
 
-// Route to update an event by ID (accessible by organizers and admins)
-router.put('/:id', authenticate, authorizeRoles('organizer', 'admin'), updateEvent);
+// Route to approve an event (only for admins)
+router.put('/:id/approve', authenticate, authorizeRoles('admin'), approveEvent);
 
-// Route to delete an event by ID (accessible by organizers and admins)
-router.delete('/:id', authenticate, authorizeRoles('organizer', 'admin'), deleteEvent);
+// Route to decline an event (only for admins)
+router.put('/:id/decline', authenticate, authorizeRoles('admin'), declineEvent);
 
-// Export the router to be used in the main application
 module.exports = router;

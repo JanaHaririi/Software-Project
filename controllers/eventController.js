@@ -1,15 +1,14 @@
-const Event = require('../models/Event'); // Import the Event model for database interactions
-const Booking = require('../models/Booking'); // Import the Booking model for database interactions
+const Event = require('../models/Event'); // Import the Event model
+const Booking = require('../models/Booking'); // Import the Booking model
 
 // @desc    Get all events
 // @access  Public
 const getAllEvents = async (req, res) => {
   try {
-    // Filter by status if provided in query parameters
     const { status } = req.query;
     const filter = {};
     if (status) filter.status = status;
-    
+
     const events = await Event.find(filter).populate('organizer', 'name email');
     res.json(events);
   } catch (err) {
@@ -36,7 +35,7 @@ const getEventById = async (req, res) => {
 const createEvent = async (req, res) => {
   try {
     const { name, description, date, location, price, totalTickets } = req.body;
-    
+
     const event = await Event.create({
       name,
       description,
@@ -69,19 +68,19 @@ const updateEvent = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this event' });
     }
 
-    // Organizers can only update certain fields
+    // Organizers can update limited fields
     if (req.user.role === 'organizer') {
-      const { totalTickets, date, location } = req.body;      
-      // Calculate new available tickets if totalTickets is updated
+      const { totalTickets, date, location } = req.body;
+
       if (totalTickets) {
         const ticketsDifference = totalTickets - event.totalTickets;
         event.availableTickets += ticketsDifference;
         event.totalTickets = totalTickets;
       }
-      
+
       if (date) event.date = date;
       if (location) event.location = location;
-    } 
+    }
     // Admins can update status
     else if (req.user.role === 'admin' && req.body.status) {
       event.status = req.body.status;
@@ -103,7 +102,6 @@ const deleteEvent = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Check if user is organizer or admin
     if (req.user.role !== 'admin' && event.organizer.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this event' });
     }
@@ -131,11 +129,11 @@ const getOrganizerEvents = async (req, res) => {
 const getOrganizerEventsAnalytics = async (req, res) => {
   try {
     const events = await Event.find({ organizer: req.user.id });
-    
+
     const analytics = await Promise.all(events.map(async (event) => {
       const bookingsCount = await Booking.countDocuments({ event: event._id });
       const percentageBooked = (bookingsCount / event.totalTickets) * 100;
-      
+
       return {
         eventId: event._id,
         eventName: event.name,
@@ -152,6 +150,40 @@ const getOrganizerEventsAnalytics = async (req, res) => {
   }
 };
 
+// @desc    Approve an event
+// @access  Private/Admin
+const approveEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    event.status = 'approved';
+    await event.save();
+    res.json({ message: 'Event approved', event });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to approve event', error: err.message });
+  }
+};
+
+// @desc    Decline an event
+// @access  Private/Admin
+const declineEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    event.status = 'declined';
+    await event.save();
+    res.json({ message: 'Event declined', event });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to decline event', error: err.message });
+  }
+};
+
 module.exports = {
   getAllEvents,
   getEventById,
@@ -159,5 +191,7 @@ module.exports = {
   updateEvent,
   deleteEvent,
   getOrganizerEvents,
-  getOrganizerEventsAnalytics
+  getOrganizerEventsAnalytics,
+  approveEvent,      // Newly added
+  declineEvent       // Newly added
 };

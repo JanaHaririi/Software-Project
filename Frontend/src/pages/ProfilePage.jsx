@@ -3,6 +3,8 @@ import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
+import React from 'react';
+
 
 export default function ProfilePage() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
