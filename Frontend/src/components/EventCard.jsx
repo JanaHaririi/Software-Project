@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const EventCard = ({ event, onEdit, onDelete, onApprove, onDecline, showStatus = true }) => {
+const EventCard = ({ event, onClick, onEdit, onDelete, onApprove, onDecline, showStatus = true }) => {
   const navigate = useNavigate();
 
   return (
@@ -17,8 +17,9 @@ const EventCard = ({ event, onEdit, onDelete, onApprove, onDecline, showStatus =
       }}
       onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onClick={onClick} // Handle click to navigate
     >
-      <div onClick={() => navigate(`/events/${event.id}`)}>
+      <div>
         <h3 style={{ margin: "0 0 0.5rem", color: "#333" }}>{event.title}</h3>
         <p style={{ margin: "0.3rem 0" }}>Date: {new Date(event.date).toLocaleDateString()}</p>
         <p style={{ margin: "0.3rem 0" }}>Location: {event.location}</p>

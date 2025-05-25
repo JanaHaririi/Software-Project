@@ -8,7 +8,7 @@ import api from "../utils/api";
 import "./HomePage.css";
 
 export default function HomePage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Kept and used below
   const { loading } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
@@ -79,7 +79,12 @@ export default function HomePage() {
         <div className="events-grid" style={{ display: "grid", gap: "1rem", marginBottom: "2rem" }}>
           {currentEvents.length > 0 ? (
             currentEvents.map(event => (
-              <EventCard key={event.id} event={event} showStatus={false} />
+              <EventCard
+                key={event.id}
+                event={event}
+                onClick={() => navigate(`/events/${event.id}`)} // Use navigate here
+                showStatus={false}
+              />
             ))
           ) : (
             <p>No events found.</p>
