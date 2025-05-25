@@ -42,16 +42,16 @@ router.put('/reset-password/:token', resetPassword);
 // ========================
 
 // Route to get all users in the system
-router.get('/users', authenticate, authorizeRoles('admin'), getAllUsers);
+router.get('/', authenticate, authorizeRoles('admin'), getAllUsers);
 
 // Route to get a single user by their ID
 router.get('/users/:id', authenticate, authorizeRoles('admin'), getUserById);
 
 // Route to update a user's data by their ID
-router.put('/users/:id', authenticate, authorizeRoles('admin'), updateUserById);
+router.put('/:id', authenticate, authorizeRoles('admin'), updateUserById);
 
 // Route to delete a user by their ID
-router.delete('/users/:id', authenticate, authorizeRoles('admin'), deleteUserById);
+router.delete('/:id', authenticate, authorizeRoles('admin'), deleteUserById);
 
 // ========================
 // Authenticated User Routes

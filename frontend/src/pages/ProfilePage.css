@@ -1,0 +1,59 @@
+.profile-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.profile-card {
+  width: 400px;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  background-color: #fff;
+}
+
+.profile-avatar {
+  width: 100px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.edit-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.edit-btn,
+.form-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-btn {
+  background-color: #0077ff;
+  color: white;
+}
+
+.form-buttons button:first-child {
+  background-color: #28a745;
+  color: white;
+  margin-right: 10px;
+}
+
+.form-buttons button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+.profile-message {
+  margin-top: 15px;
+  font-weight: bold;
+}
