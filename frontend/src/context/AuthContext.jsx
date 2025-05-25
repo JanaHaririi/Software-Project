@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import api from "../utils/api";
-import React from 'react';
-
+import React from "react";
 
 export const AuthContext = createContext();
 
@@ -28,8 +27,8 @@ export const AuthProvider = ({ children }) => {
       }
     }
     setLoading(false);
-    console.log("AuthContext initialized - loading:", loading, "currentUser:", currentUser); // Debug log
-  }, []);
+    // Removed repetitive debug log
+  }, []); // Only run on component mount
 
   const login = async (email, password) => {
     try {
@@ -42,7 +41,6 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
-      console.log("Login successful - currentUser:", user); // Debug log
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
       setError("Invalid credentials");

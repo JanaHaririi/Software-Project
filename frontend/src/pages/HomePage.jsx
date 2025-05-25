@@ -22,7 +22,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await api.get("/api/v1/events");
+        const res = await api.get("/events");
         setEvents(res.data.filter(event => event.status === "approved"));
       } catch (error) {
         console.error("Failed to fetch events:", error);
@@ -52,7 +52,9 @@ export default function HomePage() {
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
       <div className="homepage" style={{ flex: 1, padding: "2rem" }}>
-        <h1 className="title">🎟️ Welcome to EventHub</h1>
+      <h1>
+        <span role="img" aria-label="ticket">🎟️</span> Welcome to EventHub
+      </h1>
         <div className="filters" style={{ margin: "1rem 0", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <input
             type="text"
