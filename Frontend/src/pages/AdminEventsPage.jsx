@@ -1,4 +1,3 @@
-// src/pages/AdminEventsPage.jsx
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
@@ -7,9 +6,10 @@ import Footer from "../components/Footer";
 import EventCard from "../components/EventCard";
 import Loader from "../components/Loader";
 import api from "../utils/api";
-import { toast } from "react-toastify";
 import React from 'react';
 
+// Import react-hot-toast
+import toast, { Toaster } from "react-hot-toast";
 
 export default function AdminEventsPage() {
   const { currentUser } = useContext(AuthContext);
@@ -33,7 +33,7 @@ export default function AdminEventsPage() {
         setEvents(res.data);
       } catch (err) {
         setError("Failed to fetch events.");
-        toast.error("Failed to fetch events.");
+        toast.error("Failed to fetch events."); // Updated here
       } finally {
         setLoading(false);
       }
@@ -70,6 +70,9 @@ export default function AdminEventsPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
+      {/* 🟢 Add Toaster for toast notifications */}
+      <Toaster />
+
       <div style={{ flex: 1, padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
         <h2 style={{ marginBottom: "1rem" }}>Manage Events</h2>
         <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "1rem" }}>

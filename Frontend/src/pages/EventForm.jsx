@@ -5,9 +5,10 @@ import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../utils/api";
-import { toast } from "react-toastify";
 import React from 'react';
 
+// Import toast
+import toast, { Toaster } from "react-hot-toast";
 
 export default function EventForm() {
   const navigate = useNavigate();
@@ -80,6 +81,9 @@ export default function EventForm() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
+      {/* 🟢 Add Toaster for toast notifications */}
+      <Toaster />
+
       <div style={{ flex: 1, padding: "2rem", maxWidth: "600px", margin: "0 auto" }}>
         <h2>{id ? "Edit Event" : "Create Event"}</h2>
         {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
@@ -146,7 +150,10 @@ export default function EventForm() {
               required
             />
           </div>
-          <button type="submit" style={{ padding: "0.5rem 1rem", backgroundColor: "#0077ff", color: "white", border: "none", borderRadius: "4px" }}>
+          <button
+            type="submit"
+            style={{ padding: "0.5rem 1rem", backgroundColor: "#0077ff", color: "white", border: "none", borderRadius: "4px" }}
+          >
             {id ? "Update Event" : "Create Event"}
           </button>
         </form>

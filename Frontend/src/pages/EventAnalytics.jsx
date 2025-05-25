@@ -6,8 +6,9 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import api from "../utils/api";
-import { Chart } from "chart.js/auto"; // Only import Chart, auto-registers everything needed
+import { Chart } from "chart.js";
 import "./EventAnalytics.css";
+import React from 'react';
 
 export default function EventAnalytics() {
   const navigate = useNavigate();

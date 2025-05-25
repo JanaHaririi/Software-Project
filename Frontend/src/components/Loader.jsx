@@ -1,3 +1,4 @@
+import React from 'react';
 const Loader = () => (
   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>
     <div style={{

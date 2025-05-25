@@ -12,8 +12,7 @@ const {
   getEventById,
   updateEvent,
   deleteEvent,
-  getOrganizerEvents,
-  getOrganizerEventsAnalytics,
+  getAllEventsAnalytics,
   approveEvent,
   declineEvent,
 } = require('../controllers/eventController');
@@ -39,7 +38,8 @@ router.post('/', authenticate, authorizeRoles('organizer'), createEvent);
 router.put('/:id', authenticate, authorizeRoles('organizer'), updateEvent);
 
 // Route to get analytics data for the organizer's events
-router.get('/organizer/analytics', authenticate, authorizeRoles('admin'), getOrganizerEventsAnalytics);
+router.get('/organizer/analytics', authenticate, authorizeRoles('admin'), getAllEventsAnalytics);
+
 
 // ========================
 // Admin Routes (Restricted to admins only)

@@ -168,6 +168,40 @@ const getAllEventsAnalytics = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch analytics', error: err.message });
   }
 };
+// @desc    Approve an event
+// @access  Private/Admin
+const approveEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    event.status = 'approved';
+    await event.save();
+    res.json({ message: 'Event approved', event });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to approve event', error: err.message });
+  }
+};
+
+// @desc    Decline an event
+// @access  Private/Admin
+const declineEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    event.status = 'declined';
+    await event.save();
+    res.json({ message: 'Event declined', event });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to decline event', error: err.message });
+  }
+};
+
 
 // Export all controller functions
 module.exports = {
@@ -179,4 +213,6 @@ module.exports = {
   deleteEvent,
   getOrganizerEvents,
   getAllEventsAnalytics,
+  approveEvent,
+  declineEvent,
 };

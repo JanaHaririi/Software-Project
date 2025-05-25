@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { toast } from "react-toastify";
 import "./RegisterForm.css";
 import "./AuthForm.css";
+import toast from "react-hot-toast";
 import React from 'react';
 
 
