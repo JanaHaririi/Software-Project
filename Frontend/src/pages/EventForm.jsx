@@ -15,6 +15,7 @@ export default function EventForm() {
     category: "",
     ticketCount: 0,
     ticketPrice: 0,
+    status: "pending", // Default status as per Task 2
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -28,14 +29,16 @@ export default function EventForm() {
           setFormData({
             title: event.title,
             description: event.description,
-            date: new Date(event.date).toISOString().split("T")[0], // Ensure date format is YYYY-MM-DD
+            date: new Date(event.date).toISOString().split("T")[0],
             location: event.location,
             category: event.category,
             ticketCount: event.totalTickets || 0,
             ticketPrice: event.ticketPrice || 0,
+            status: event.status || "pending",
           });
         } catch (err) {
-          setError("Failed to fetch event details.");
+          setError(`Failed to fetch event details: ${err.response?.data?.message || err.message}`);
+          console.error("Fetch error:", err);
         }
       };
       fetchEvent();
@@ -55,25 +58,37 @@ export default function EventForm() {
     setError("");
     setSuccess("");
 
-    // Basic client-side validation
+    // Client-side validation
     if (!formData.title || !formData.description || !formData.date || !formData.location || !formData.category || formData.ticketCount <= 0 || formData.ticketPrice <= 0) {
       setError("All fields are required, and ticket count/price must be greater than 0.");
       return;
     }
 
     try {
+      console.log("Submitting form data:", formData); // Log the data being sent
       if (id) {
-        await api.put(`/api/v1/events/${id}`, formData);
+        const res = await api.put(`/api/v1/events/${id}`, formData);
         setSuccess("Event updated successfully!");
       } else {
         const res = await api.post("/api/v1/events", formData);
         setSuccess("Event created successfully!");
-        // Optionally reset form or navigate after creation
-        setFormData({ title: "", description: "", date: "", location: "", category: "", ticketCount: 0, ticketPrice: 0 });
+        // Reset form after successful creation
+        setFormData({
+          title: "",
+          description: "",
+          date: "",
+          location: "",
+          category: "",
+          ticketCount: 0,
+          ticketPrice: 0,
+          status: "pending",
+        });
       }
-      setTimeout(() => navigate("/my-events"), 1000); // Delay navigation to show success message
+      setTimeout(() => navigate("/my-events"), 1000);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save event. Please check your input or contact support.");
+      const errorMessage = err.response?.data?.message || err.message || "Failed to save event. Please check your input or contact support.";
+      setError(errorMessage);
+      console.error("Submission error:", err.response?.data || err);
     }
   };
 
