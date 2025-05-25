@@ -25,7 +25,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
-      const res = await api.get("/api/v1/users/riddle", formData);
+      const res = await api.get("/users/riddle", formData);
       setCurrentUser(res.data);
       setSuccess("Profile updated successfully.");
     } catch (err) {

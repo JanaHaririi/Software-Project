@@ -14,7 +14,7 @@ export default function BookingDetails() {
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const res = await api.get(`/api/v1/bookings/${id}`);
+        const res = await api.get(`/bookings/${id}`);
         setBooking(res.data);
       } catch (err) {
         setError("Failed to fetch booking details.");
