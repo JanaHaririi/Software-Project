@@ -7,7 +7,6 @@ import api from "../utils/api";
 import "./EventDetails.css";
 import React from 'react';
 
-
 export default function EventDetails() {
   const { id } = useParams();
   const { currentUser } = useContext(AuthContext);
@@ -21,12 +20,12 @@ export default function EventDetails() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await api.get(`/api/v1/events/${id}`);
+        const res = await api.get(`/events/${id}`);
         setEvent(res.data);
       } catch (err) {
         if (err.response?.status === 404) {
           setError("Event not found.");
-          setTimeout(() => navigate("/"), 2000); // Redirect to homepage after 2 seconds
+          setTimeout(() => navigate("/"), 2000);
         } else {
           setError(err.response?.data?.message || "Failed to fetch event details.");
         }
@@ -51,7 +50,7 @@ export default function EventDetails() {
     }
 
     try {
-      await api.post("/api/v1/bookings", { eventId: id, quantity });
+      await api.post("/bookings", { eventId: id, tickets: quantity });
       setSuccess("Tickets booked successfully!");
       setEvent(prev => ({ ...prev, remainingTickets: prev.remainingTickets - quantity }));
     } catch (err) {
@@ -80,14 +79,22 @@ export default function EventDetails() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
-      <div className="event-details" style={{ flex: 1, padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+      <div className="event-details" style={{ flex: 1 }}>
         <h2>{event.title}</h2>
+        {event.image && (
+          <img
+            src={event.image}
+            alt={event.title}
+            style={{ maxWidth: "100%", height: "auto", borderRadius: "8px", marginBottom: "1rem" }}
+            onError={(e) => { e.target.style.display = 'none'; }} // Hide broken images
+          />
+        )}
         <div className="event-info">
           <p><strong>Description:</strong> {event.description}</p>
           <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
           <p><strong>Location:</strong> {event.location}</p>
-          <p><strong>Category:</strong> {event.category}</p>
-          <p><strong>Ticket Price:</strong> ${event.ticketPrice}</p>
+          <p><strong>Category:</strong> {event.category || "N/A"}</p>
+          <p><strong>Ticket Price:</strong> ${event.ticketPrice.toFixed(2)}</p>
           <p><strong>Available Tickets:</strong> {event.remainingTickets}</p>
         </div>
         {currentUser && (

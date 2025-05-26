@@ -1,5 +1,3 @@
-
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext, useEffect } from "react";
@@ -22,14 +20,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import React from 'react';
 
-
+// Define the ErrorBoundary component
 function ErrorBoundary({ children }) {
   const { setError } = useContext(AuthContext);
 
   useEffect(() => {
     const handleError = (error) => {
+      console.error(`[${new Date().toISOString()}] Error Boundary caught:`, error);
       setError("An unexpected error occurred. Please try again or contact support.");
-      console.error("Error Boundary caught:", error);
     };
 
     window.addEventListener("error", handleError);
@@ -39,6 +37,7 @@ function ErrorBoundary({ children }) {
   return children;
 }
 
+// Define the App component
 function App() {
   return (
     <AuthProvider>
@@ -50,6 +49,7 @@ function App() {
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ForgotPassword />} />
             <Route path="/events/:id" element={<EventDetails />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
@@ -103,7 +103,7 @@ function App() {
               }
             />
             <Route
-              path="/my-events/analytica"
+              path="/my-events/analytics"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <EventAnalytics />
@@ -150,6 +150,7 @@ function App() {
               }
             />
           </Routes>
+          <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         </ErrorBoundary>
       </BrowserRouter>
     </AuthProvider>

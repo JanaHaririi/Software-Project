@@ -1,11 +1,11 @@
+// src/pages/MyEventsPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import EventCard from "../components/EventCard";
-import api from "../utils/api";
+import api from "../utils/api"; // Verify this path matches your project structure
 import React from 'react';
-
 
 export default function MyEventsPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function MyEventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await api.get("/users/events");
+        const res = await api.get("/events/organizer/events"); // Fixed: Removed /api/v1
         setEvents(res.data);
       } catch (err) {
         setError("Failed to fetch events.");
@@ -26,7 +26,7 @@ export default function MyEventsPage() {
 
   const handleDelete = async (eventId) => {
     try {
-      await api.delete(`/api/v1/events/${eventId}`);
+      await api.delete(`/events/${eventId}`); // Fixed: Removed /api/v1
       setEvents(events.filter(event => event.id !== eventId));
     } catch (err) {
       setError("Failed to delete event.");

@@ -34,6 +34,16 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-group input[type="url"] {
+  font-family: monospace; /* Better readability for URLs */
+}
+
+.form-group select {
+  appearance: none;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23333" d="M6 9L2 5h8z"/></svg>') no-repeat right 0.75rem center/12px 12px;
 }
 
 .form-group textarea {

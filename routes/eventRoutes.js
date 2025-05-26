@@ -1,4 +1,3 @@
-// routes/eventRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -12,6 +11,8 @@ const {
   getEventById,
   updateEvent,
   deleteEvent,
+  getAllEventsAdmin,
+  getOrganizerEvents,
   getAllEventsAnalytics,
   approveEvent,
   declineEvent,
@@ -21,7 +22,7 @@ const {
 // Public Routes for Events
 // ========================
 
-// Route to get all events
+// Route to get all approved events (used by homepage)
 router.get('/', getAllEvents);
 
 // Route to get a specific event by ID
@@ -34,21 +35,24 @@ router.get('/:id', getEventById);
 // Route to create a new event (only for organizers)
 router.post('/', authenticate, authorizeRoles('organizer'), createEvent);
 
-// Route to update an event by ID (only for organizers)
-router.put('/:id', authenticate, authorizeRoles('organizer'), updateEvent);
+// Route to update an event by ID (only for organizers or admins)
+router.put('/:id', authenticate, authorizeRoles('organizer', 'admin'), updateEvent);
 
-// Route to get analytics data for the organizer's events
-router.get('/organizer/analytics', authenticate, authorizeRoles('admin'), getAllEventsAnalytics);
+// Route to delete an event by ID (only for organizers or admins)
+router.delete('/:id', authenticate, authorizeRoles('organizer', 'admin'), deleteEvent);
 
+// Route to get organizer's events
+router.get('/organizer/events', authenticate, authorizeRoles('organizer'), getOrganizerEvents);
 
 // ========================
 // Admin Routes (Restricted to admins only)
 // ========================
 
-// Route to get all events for admin (used in AdminEventsPage)
-router.get('/admin/all', authenticate, authorizeRoles('admin'), getAllEvents);
-// Route to delete an event by ID (only for organizers)
-router.delete('/:id', authenticate, authorizeRoles('organizer'), deleteEvent);
+// Route to get all events for admin (including all statuses)
+router.get('/admin/all', authenticate, authorizeRoles('admin'), getAllEventsAdmin);
+
+// Route to get analytics data for all events
+router.get('/analytics', authenticate, authorizeRoles('admin'), getAllEventsAnalytics);
 
 // ========================
 // Admin Routes for Approving/Declining Events

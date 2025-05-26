@@ -1,14 +1,14 @@
-const Booking = require('../models/Booking'); // Import the Booking model for database interactions
-const Event = require('../models/Event'); // Import the Event model for database interactions
+const Booking = require('../models/Booking');
+const Event = require('../models/Event');
 
 // Create new booking endpoint
 // Access level: Private/User
 const createBooking = async (req, res) => {
   try {
-    const { eventId, tickets } = req.body; // Extract eventId and tickets from request body
+    const { eventId, quantity } = req.body; // Updated to quantity
     
     // Validate input data for existence and correctness
-    if (!eventId || !tickets || tickets <= 0) {
+    if (!eventId || !quantity || quantity <= 0) {
       return res.status(400).json({ message: 'Invalid booking data' });
     }
 
@@ -22,30 +22,30 @@ const createBooking = async (req, res) => {
     }
 
     // Check if there are enough tickets available for the booking
-    if (event.availableTickets < tickets) {
+    if (event.remainingTickets < quantity) {
       return res.status(400).json({ 
         message: 'Not enough tickets available', 
-        availableTickets: event.availableTickets 
+        remainingTickets: event.remainingTickets 
       });
     }
 
     // Calculate the total price for the booking based on ticket price and quantity
-    const totalPrice = event.price * tickets;
+    const totalPrice = event.ticketPrice * quantity;
 
     // Create a new booking record in the database
     const booking = await Booking.create({
-      user: req.user.id, // Assign the user ID from the request context
-      event: eventId, // Assign the event ID
-      tickets, // Assign the number of tickets
-      totalPrice, // Assign the total price
-      bookingDate: new Date() // Assign the current date to the booking date
+      user: req.user.id,
+      event: eventId,
+      quantity,
+      totalPrice,
+      bookingDate: new Date()
     });
 
     // Update the event's available tickets by subtracting the booked tickets
-    event.availableTickets -= tickets;
+    event.remainingTickets -= quantity;
     await event.save();
 
-    res.status(201).json(booking); // Send the created booking object in the response
+    res.status(201).json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create booking', error: err.message });
   }
@@ -56,8 +56,8 @@ const createBooking = async (req, res) => {
 const getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate('user', 'name email') // Populate user information
-      .populate('event', 'name date location price'); // Populate event information
+      .populate('user', 'name email')
+      .populate('event', 'title date location ticketPrice');
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
@@ -68,7 +68,7 @@ const getBookingById = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to view this booking' });
     }
 
-    res.json(booking); // Send the booking details in the response
+    res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch booking', error: err.message });
   }
@@ -95,13 +95,14 @@ const cancelBooking = async (req, res) => {
     }
 
     // Return tickets to the event by increasing available tickets
-    event.availableTickets += booking.tickets;
+    event.remainingTickets += booking.quantity;
     await event.save();
 
-    // Delete the booking record
-    await booking.deleteOne();
+    // Update the booking status to canceled instead of deleting
+    booking.status = 'canceled';
+    await booking.save();
 
-    res.json({ message: 'Booking cancelled successfully' }); // Send a success message in the response
+    res.json({ message: 'Booking cancelled successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to cancel booking', error: err.message });
   }
@@ -112,8 +113,8 @@ const cancelBooking = async (req, res) => {
 const getUserBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user.id })
-      .populate('event', 'name date location price'); // Populate event details for each booking
-    res.json(bookings); // Send the list of bookings in the response
+      .populate('event', 'title date location ticketPrice');
+    res.json(bookings);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch bookings', error: err.message });
   }

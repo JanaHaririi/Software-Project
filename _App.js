@@ -3,18 +3,15 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 
-// Use the actual file names you have
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 
-require('dotenv').config(); // Load environment variables
+require('dotenv').config();
 
-// Initialize Express app
 const app = express();
 
-// CORS configuration
 const corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true,
@@ -22,46 +19,71 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight requests
+app.options('*', cors(corsOptions));
 
-// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, {
+// Log incoming requests before routing
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
+// MongoDB connection with retry logic
+const connectWithRetry = () => {
+  mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000, // 5-second timeout
   })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log(`[${new Date().toISOString()}] MongoDB connected`))
+  .catch(err => {
+    console.error(`[${new Date().toISOString()}] MongoDB connection error:`, err.message);
+    console.log(`[${new Date().toISOString()}] Retrying connection in 5 seconds...`);
+    setTimeout(connectWithRetry, 5000); // Retry every 5 seconds
+  });
+};
 
-// Base Route
+connectWithRetry();
+
+// Routes
 app.get('/', (req, res) => {
   res.send('Welcome to the Event Ticketing System!');
 });
 
-// API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 
-// Central Error Handler
+// Handle 404 errors
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] 404 Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ message: 'Not Found' });
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
+  console.error(`[${new Date().toISOString()}] Error:`, err.stack);
   res.status(500).json({ message: err.message || 'An unexpected error occurred' });
 });
 
-// Start the server
 const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-app._router.stack.forEach(r => {
-  if (r.route && r.route.path) {
-    console.log(r.route.path);
-  }
+app.listen(PORT, () => {
+  console.log(`[${new Date().toISOString()}] Server running on port ${PORT}`);
+  app._router.stack.forEach(r => {
+    if (r.route && r.route.path) {
+      console.log(`${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
+    } else if (r.name === 'router' && r.handle.stack) {
+      const basePath = r.regexp.toString().replace(/\/\^\\\/api\\\/v1\\\/([a-z]+).*/, '$1');
+      r.handle.stack.forEach(route => {
+        if (route.route) {
+          console.log(`${route.route.stack[0].method.toUpperCase()} /api/v1/${basePath}${route.route.path === '/' ? '' : route.route.path}`);
+        }
+      });
+    }
+  });
 });

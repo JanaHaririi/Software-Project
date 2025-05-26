@@ -48,10 +48,16 @@ const eventSchema = new mongoose.Schema({
     ref: "User", // Reference the User model
     required: true, // Organizer is required
   },
+  status: { // Define the status field for event approval status
+    type: String, // Use String type for status
+    enum: ["pending", "approved", "declined"], // Restrict status to specified enum values
+    default: "pending", // Default to pending
+    required: true, // Status is required
+  },
   createdAt: { // Define the createdAt field for event creation date
     type: Date, // Use Date type for creation date
     default: Date.now, // Default to the current date and time
- },
+  },
 });
 
 // Create a Mongoose model based on the eventSchema and export it

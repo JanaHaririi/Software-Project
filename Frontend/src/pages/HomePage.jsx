@@ -8,28 +8,33 @@ import api from "../utils/api";
 import "./HomePage.css";
 import React from 'react';
 
-
 export default function HomePage() {
-  const navigate = useNavigate(); // Kept and used below
-  const { loading } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { currentUser, loading } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [eventsPerPage] = useState(6); // Show 6 events per page
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await api.get("/events");
-        setEvents(res.data.filter(event => event.status === "approved"));
+        console.log(`[${new Date().toISOString()}] HomePage - Fetching events for user:`, currentUser);
+        const res = await api.get('/events');
+        const approvedEvents = res.data.filter(event => event.status === "approved");
+        console.log(`[${new Date().toISOString()}] HomePage - Fetched events:`, approvedEvents);
+        setEvents(approvedEvents);
       } catch (error) {
-        console.error("Failed to fetch events:", error);
+        console.error(`[${new Date().toISOString()}] Failed to fetch events:`, error);
+        setError("Failed to fetch events. Please try again later.");
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchEvents();
-  }, []);
+  }, [currentUser]);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(search.toLowerCase());
@@ -47,14 +52,15 @@ export default function HomePage() {
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) return <p>Loading...</p>;
+  if (error) return <div style={{ color: "red", textAlign: "center", padding: "2rem" }}>{error}</div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
       <div className="homepage" style={{ flex: 1, padding: "2rem" }}>
-      <h1>
-        <span role="img" aria-label="ticket">🎟️</span> Welcome to EventHub
-      </h1>
+        <h1>
+          <span role="img" aria-label="ticket">🎟️</span> Welcome to EventHub
+        </h1>
         <div className="filters" style={{ margin: "1rem 0", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <input
             type="text"
@@ -84,9 +90,9 @@ export default function HomePage() {
           {currentEvents.length > 0 ? (
             currentEvents.map(event => (
               <EventCard
-                key={event.id}
+                key={event._id}
                 event={event}
-                onClick={() => navigate(`/events/${event.id}`)} // Use navigate here
+                onClick={() => navigate(`/events/${event._id}`)}
                 showStatus={false}
               />
             ))

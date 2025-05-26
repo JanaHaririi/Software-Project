@@ -1,4 +1,3 @@
-// Import the express library to create routes
 const express = require('express');
 
 // Create a new router object using express
@@ -18,7 +17,7 @@ const {
   updateUserById,
   deleteUserById,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
 } = require('../controllers/userController');
 
 // ========================
