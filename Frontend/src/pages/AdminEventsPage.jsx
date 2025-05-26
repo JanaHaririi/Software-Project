@@ -29,7 +29,7 @@ export default function AdminEventsPage() {
       setLoading(true);
       setError("");
       try {
-        const res = await api.get("/api/v1/events/admin/all");
+        const res = await api.get("/events/admin/all");
         setEvents(res.data);
       } catch (err) {
         setError("Failed to fetch events.");
@@ -43,7 +43,7 @@ export default function AdminEventsPage() {
 
   const handleApprove = async (eventId) => {
     try {
-      await api.put(`/api/v1/events/${eventId}`, { status: "approved" });
+      await api.put(`/events/${eventId}`, { status: "approved" });
       setEvents(events.map(event => (event.id === eventId ? { ...event, status: "approved" } : event)));
       toast.success("Event approved successfully!");
     } catch (err) {
@@ -54,7 +54,7 @@ export default function AdminEventsPage() {
 
   const handleDecline = async (eventId) => {
     try {
-      await api.put(`/api/v1/events/${eventId}`, { status: "declined" });
+      await api.put(`/events/${eventId}`, { status: "declined" });
       setEvents(events.map(event => (event.id === eventId ? { ...event, status: "declined" } : event)));
       toast.success("Event declined successfully!");
     } catch (err) {

@@ -102,7 +102,7 @@ export default function HomePage() {
                 onClick={() => handlePageChange(page)}
                 style={{
                   padding: "0.5rem 1rem",
-                  backgroundColor: currentPage === page ? "#0077ff" : "#f1f1f1",
+                  backgroundColor: currentPage === page ? "#003166" : "#f1f1f1",
                   color: currentPage === page ? "white" : "black",
                   border: "none",
                   borderRadius: "4px",
