@@ -17,15 +17,14 @@ export default function EventForm() {
     description: "",
     date: "",
     location: "",
-    ticketPrice: "",
-    totalTickets: "",
+    ticketPrice: "0", // ✅ Correct field name
+    totalTickets: "1",
     category: "",
-    image: "", // Added image field
+    image: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Category options for dropdown, matching Event.js schema
   const categories = ["Concert", "Sports", "Theater", "Conference", "Festival", "Other"];
 
   useEffect(() => {
@@ -44,10 +43,10 @@ export default function EventForm() {
             description: res.data.description,
             date: new Date(res.data.date).toISOString().split('T')[0],
             location: res.data.location,
-            price: res.data.ticketPrice,
-            totalTickets: res.data.totalTickets,
+            ticketPrice: res.data.ticketPrice.toString(), // ✅ Ensure it's a string for input
+            totalTickets: res.data.totalTickets.toString(),
             category: res.data.category || "",
-            image: res.data.image || "", // Populate image
+            image: res.data.image || "",
           });
         } catch (err) {
           setError("Failed to fetch event data.");
@@ -71,20 +70,27 @@ export default function EventForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    console.log("Form data:", formData);
-  
+
+    // Validate: Prevent submitting if ticketPrice or totalTickets are empty
+    if (!formData.ticketPrice || !formData.totalTickets) {
+      setError("Please enter a valid ticket price and total tickets.");
+      return;
+    }
+
+    console.log("Form data to submit:", formData);
+
     try {
       const dataToSend = {
         ...formData,
         ticketPrice: Number(formData.ticketPrice),
         totalTickets: Number(formData.totalTickets),
       };
-  
+
       if (!currentUser) {
         navigate("/login");
         return;
       }
-  
+
       if (id) {
         await api.put(`/events/${id}`, dataToSend);
         toast.success("Event updated successfully!");
@@ -92,7 +98,7 @@ export default function EventForm() {
         await api.post("/events", dataToSend);
         toast.success("Event created successfully!");
       }
-  
+
       navigate("/my-events");
     } catch (err) {
       console.error("Error creating/updating event:", err.response?.data || err.message);
@@ -102,10 +108,6 @@ export default function EventForm() {
       setLoading(false);
     }
   };
-  
-  
-  
-  
 
   if (loading) return <div>Loading...</div>;
 
@@ -134,12 +136,27 @@ export default function EventForm() {
             <input type="text" name="location" value={formData.location} onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label>Price:</label>
-            <input type="number" name="price" value={formData.price} onChange={handleChange} step="0.01" min="0" required />
+            <label>Ticket Price:</label> {/* ✅ Correct label */}
+            <input
+              type="number"
+              name="ticketPrice" // ✅ Correct field name
+              value={formData.ticketPrice}
+              onChange={handleChange}
+              step="0.01"
+              min="0"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Total Tickets:</label>
-            <input type="number" name="totalTickets" value={formData.totalTickets} onChange={handleChange} min="1" required />
+            <input
+              type="number"
+              name="totalTickets"
+              value={formData.totalTickets}
+              onChange={handleChange}
+              min="1"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Category:</label>
