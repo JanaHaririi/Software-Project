@@ -17,7 +17,7 @@ export default function EventForm() {
     description: "",
     date: "",
     location: "",
-    price: "",
+    ticketPrice: "",
     totalTickets: "",
     category: "",
     image: "", // Added image field
@@ -71,27 +71,41 @@ export default function EventForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    console.log("Form data:", formData);
+  
     try {
+      const dataToSend = {
+        ...formData,
+        ticketPrice: Number(formData.ticketPrice),
+        totalTickets: Number(formData.totalTickets),
+      };
+  
       if (!currentUser) {
         navigate("/login");
         return;
       }
-
+  
       if (id) {
-        await api.put(`/events/${id}`, formData);
+        await api.put(`/events/${id}`, dataToSend);
         toast.success("Event updated successfully!");
       } else {
-        await api.post("/events", formData);
+        await api.post("/events", dataToSend);
         toast.success("Event created successfully!");
       }
+  
       navigate("/my-events");
     } catch (err) {
+      console.error("Error creating/updating event:", err.response?.data || err.message);
       setError(`Request failed: ${err.response?.data?.message || "Unknown error"}`);
       toast.error(`Failed to ${id ? "update" : "create"} event.`);
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
+  
 
   if (loading) return <div>Loading...</div>;
 
