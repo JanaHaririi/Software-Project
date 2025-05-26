@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import api from "../utils/api";
 import React from 'react';
 
-
 export default function ProfilePage() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
   const [formData, setFormData] = useState({
@@ -25,10 +24,12 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
-      const res = await api.get("/users/riddle", formData);
+      // Correct endpoint and method for updating profile
+      const res = await api.put("/users/profile", formData);
       setCurrentUser(res.data);
       setSuccess("Profile updated successfully.");
     } catch (err) {
+      console.error("Update profile error:", err);
       setError(err.response?.data?.message || "Failed to update profile.");
     }
   };
