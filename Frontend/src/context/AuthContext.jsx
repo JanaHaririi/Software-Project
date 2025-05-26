@@ -1,3 +1,4 @@
+// 
 import { createContext, useState, useEffect } from "react";
 import api from "../utils/api";
 import React from "react";
@@ -19,11 +20,11 @@ export const AuthProvider = ({ children }) => {
       if (storedUser && storedToken) {
         try {
           const parsedUser = JSON.parse(storedUser);
-          // Verify token with backend
+          // Verify token with backend using the original /auth/check endpoint
           const res = await api.get("/auth/check", {
             headers: { Authorization: `Bearer ${storedToken}` },
           });
-          setCurrentUser(parsedUser);
+          setCurrentUser(parsedUser); // Assuming /auth/check returns user data or validates it
           setToken(storedToken);
         } catch (err) {
           console.error("Session validation failed:", err.response?.data || err.message);
@@ -35,14 +36,14 @@ export const AuthProvider = ({ children }) => {
           setError("Session expired. Please log in again.");
         }
       }
-    }
-    setLoading(false);
-    // Removed repetitive debug log
-  }, []); // Only run on component mount
+      setLoading(false);
+    };
+    validateSession();
+  }, []);
 
   const login = async (email, password) => {
     try {
-      setError(null); // Clear previous errors
+      setError(null);
       const res = await api.post("/auth/login", { email, password });
       const { user, token } = res.data;
       if (!user || !token) {
@@ -53,6 +54,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
       console.log("Login successful - currentUser:", user);
+      return user; // Return user object for role-based redirection
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Invalid credentials");
@@ -62,7 +64,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (formData) => {
     try {
-      setError(null); // Clear previous errors
+      setError(null);
       const res = await api.post("/auth/register", formData);
       const { user, token } = res.data;
       if (!user || !token) {
@@ -81,8 +83,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      setError(null); // Clear previous errors
-      await api.post("/auth/logout", {}, { withCredentials: true }); // Ensure cookies are sent
+      setError(null);
+      await api.post("/auth/logout", {}, { withCredentials: true });
       setCurrentUser(null);
       setToken(null);
       localStorage.removeItem("user");
@@ -99,17 +101,17 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         currentUser,
+        setCurrentUser,
         token,
         login,
         register,
         logout,
         loading,
         error,
-        setError, // Expose setError to allow components to clear errors
+        setError,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-

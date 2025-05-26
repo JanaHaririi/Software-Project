@@ -4,7 +4,6 @@ import Footer from "../components/Footer";
 import api from "../utils/api";
 import React from 'react';
 
-
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
@@ -13,7 +12,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await api.get("/api/v1/users");
+        const res = await api.get("/users");
         setUsers(res.data);
       } catch (err) {
         setError("Failed to fetch users.");
@@ -24,8 +23,8 @@ export default function AdminUsersPage() {
 
   const handleUpdateRole = async () => {
     try {
-      await api.put(`/api/v1/users/${roleModal.userId}`, { role: roleModal.newRole });
-      setUsers(users.map(user => (user.id === roleModal.userId ? { ...user, role: roleModal.newRole } : user)));
+      await api.put(`/users/${roleModal.userId}`, { role: roleModal.newRole });
+      setUsers(users.map(user => (user._id === roleModal.userId ? { ...user, role: roleModal.newRole } : user)));
       setRoleModal({ open: false, userId: null, newRole: "" });
     } catch (err) {
       setError("Failed to update role.");
@@ -35,8 +34,8 @@ export default function AdminUsersPage() {
   const handleDelete = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await api.delete(`/api/v1/users/${userId}`);
-        setUsers(users.filter(user => user.id !== userId));
+        await api.delete(`/users/${userId}`);
+        setUsers(users.filter(user => user._id !== userId));
       } catch (err) {
         setError("Failed to delete user.");
       }
@@ -61,19 +60,19 @@ export default function AdminUsersPage() {
             </thead>
             <tbody>
               {users.map(user => (
-                <tr key={user.id}>
+                <tr key={user._id}>
                   <td style={{ border: "1px solid #ddd", padding: "0.5rem" }}>{user.name}</td>
                   <td style={{ border: "1px solid #ddd", padding: "0.5rem" }}>{user.email}</td>
                   <td style={{ border: "1px solid #ddd", padding: "0.5rem" }}>{user.role}</td>
                   <td style={{ border: "1px solid #ddd", padding: "0.5rem" }}>
                     <button
-                      onClick={() => setRoleModal({ open: true, userId: user.id, newRole: user.role })}
-                      style={{ padding: "0.5rem", marginRight: "0.5rem", backgroundColor: "#0077ff", color: "white", border: "none" }}
+                      onClick={() => setRoleModal({ open: true, userId: user._id, newRole: user.role })}
+                      style={{ padding: "0.5rem", marginRight: "0.5rem", backgroundColor: "#003166", color: "white", border: "none" }}
                     >
                       Update Role
                     </button>
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(user._id)}
                       style={{ padding: "0.5rem", backgroundColor: "#ff4444", color: "white", border: "none" }}
                     >
                       Delete

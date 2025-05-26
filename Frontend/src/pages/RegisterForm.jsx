@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -72,15 +72,14 @@ export default function RegisterForm() {
     }
 
     try {
-      // Call the register function with name, email, password, and role
-      await register({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-        role: formData.role,
-      });
-      toast.success("Registration successful! Please log in.");
-      navigate("/login");
+      await register(formData);
+      toast.success("Registration successful! Please proceed.");
+      // Redirect based on role after registration
+      if (formData.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || "Registration failed";
       setError(errorMessage);
@@ -91,10 +90,9 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="register-container">
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }} className="register-container">
       <Navbar />
-      <Toaster />
-      <div className="register-form">
+      <div className="register-form" style={{ flex: 1 }}>
         <h2>Register</h2>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleSubmit}>
@@ -160,6 +158,12 @@ export default function RegisterForm() {
             {loading ? "Registering..." : "Register"}
           </button>
         </form>
+        <p style={{ fontSize: "14px", marginTop: "10px", textAlign: "center" }}>
+          Already have an account?{" "}
+          <Link to="/login" style={{ color: "#003166" }}>
+            Login here
+          </Link>
+        </p>
       </div>
       <Footer />
     </div>

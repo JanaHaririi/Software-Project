@@ -4,8 +4,7 @@ const bcrypt = require('bcryptjs'); // Import bcrypt for hashing passwords
 const crypto = require('crypto'); // Import crypto for generating random bytes
 const nodemailer = require('nodemailer'); // Import nodemailer for sending emails
 
-// Function to generate a reset token
-const getResetToken = () => crypto.randomBytes(20).toString('hex'); // Generates a random hex string
+const getResetToken = () => crypto.randomBytes(20).toString('hex');
 
 // Create a transporter object to handle email sending
 const transporter = nodemailer.createTransport({
@@ -32,7 +31,7 @@ transporter.verify((error, success) => {
 // Function to register a new user
 const registerUser = async (req, res) => {
   console.log("🧾 Received body:", req.body);
-  const { name, email, password } = req.body; // Destructure the request body for user details
+  const { name, email, password } = req.body;
 
   // Basic input validation
   if (!name || !email || !password) {
@@ -49,13 +48,11 @@ const registerUser = async (req, res) => {
   }
 
   try {
-    // Check if user exists in the database
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' }); // Return error if user exists
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create user in the database
     const user = await User.create({
       name: name.trim(),
       email: email.trim(),
@@ -63,15 +60,14 @@ const registerUser = async (req, res) => {
       role: 'user' // Default to 'user' if no role provided
     });
 
-    // Generate token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Sign token with user id and role
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token // Send token in the response
+      token
     });
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Registration error:`, err.message);
@@ -81,8 +77,7 @@ const registerUser = async (req, res) => {
 
 // Function to authenticate user
 const loginUser = async (req, res) => {
-  console.log("Login requested:", req.body);
-  const { email, password } = req.body; // Destructure the request body for login credentials
+  const { email, password } = req.body;
 
   // Basic input validation
   if (!email || !password) {
@@ -93,27 +88,24 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    // Check for user in the database
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // Return error if user not found
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // Return error if password does not match
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Sign token with user id and role
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
       id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token // Send token in the response
+      token
     });
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Login error:`, err.message);
@@ -121,9 +113,9 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Function to handle forgot password request
+// Function to handle forgot password
 const forgotPassword = async (req, res) => {
-  const { email } = req.body; // Destructure the request body for email
+  const { email } = req.body;
 
   // Basic input validation
   if (!email) {
@@ -136,16 +128,15 @@ const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Generate reset token and expiry
-    const resetToken = getResetToken(); // Generate reset token
-    const resetTokenExpiry = Date.now() + 3600000; // Set expiry to 1 hour
+    const resetToken = getResetToken();
+    const resetTokenExpiry = Date.now() + 3600000;
 
-    user.resetPasswordToken = resetToken; // Assign reset token to user document
-    user.resetPasswordExpires = resetTokenExpiry; // Assign expiry time
-    await user.save(); // Save the user document
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
 
     // Create reset URL
     const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
@@ -225,23 +216,15 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        message: 'Invalid or expired token' 
-      });
+      return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
-    // Set new password
-    user.password = await bcrypt.hash(password, 10); // Hash the new password
-    user.resetPasswordToken = undefined; // Clear reset token
-    user.resetPasswordExpires = undefined; // Clear expiry time
-    await user.save(); // Save the user document
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
 
-    // Create new JWT
-    const authToken = jwt.sign(
-      { id: user._id, role: user.role }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
+    const authToken = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(200).json({
       success: true,
@@ -272,7 +255,7 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Function to update user profile
+// ✅ NEW: Function to update user profile
 const updateUserProfile = async (req, res) => {
   try {
     console.log(`[${new Date().toISOString()}] Updating profile for user:`, req.user);
@@ -311,9 +294,9 @@ const getUserById = async (req, res) => {
     }
     const user = await User.findById(req.params.id).select('-password'); // Fetch user details excluding password
     if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user); // Send user details in the response
+    res.json(user);
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Get user by ID error:`, err.message);
     res.status(500).json({ message: 'Failed to fetch user', error: err.message }); // Handle errors during fetching user by ID
@@ -329,9 +312,9 @@ const updateUserById = async (req, res) => {
     }
     const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true }).select('-password'); // Update user details
     if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user); // Send updated user details in the response
+    res.json(user);
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Update user by ID error:`, err.message);
     res.status(500).json({ message: 'Failed to update user', error: err.message }); // Handle errors during user update
@@ -347,9 +330,9 @@ const deleteUserById = async (req, res) => {
     }
     const user = await User.findByIdAndDelete(req.params.id); // Delete user by ID
     if (!user) {
-      return res.status(404).json({ message: 'User not found' }); // Return error if user not found
+      return res.status(404).json({ message: 'User not found' });
     }
-    res.json({ message: 'User removed' }); // Send success message in the response
+    res.json({ message: 'User removed' });
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Delete user by ID error:`, err.message);
     res.status(500).json({ message: 'Failed to delete user', error: err.message }); // Handle errors during user deletion

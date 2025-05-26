@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext, useEffect } from "react";
@@ -14,6 +15,8 @@ import MyEventsPage from "./pages/MyEventsPage";
 import EventForm from "./pages/EventForm";
 import AdminEventsPage from "./pages/AdminEventsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminDashboardPage from "./pages/AdminDashboard";
+import AdminManagePage from "./pages/AdminManagePage"; // Import the new page
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import EventAnalytics from "./pages/EventAnalytics";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -127,6 +130,22 @@ function App() {
               }
             />
             <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/manage"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminManagePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard"
               element={
                 <ProtectedRoute allowedRoles={["admin", "organizer", "user"]}>
@@ -142,7 +161,7 @@ function App() {
                   <h2 style={{ color: "#333" }}>404 - Page Not Found</h2>
                   <p style={{ color: "#666" }}>
                     The page you are looking for does not exist.{" "}
-                    <a href="/" style={{ color: "#0077ff" }}>
+                    <a href="/" style={{ color: "#003166" }}>
                       Go back to Home
                     </a>
                   </p>
